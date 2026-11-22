@@ -1,0 +1,4708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Call of Silence · 指弹六线谱</title>
+  <style>
+    :root {
+      --bg: #f4f4f5;
+      --paper: #ffffff;
+      --text: #18181b;
+      --muted: #71717a;
+      --line: #e4e4e7;
+      --accent: #4f46e5;
+      --accent-soft: rgba(79, 70, 229, 0.10);
+      --ok: #16a34a;
+      --warn: #d97706;
+      --err: #dc2626;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input {
+      font-family: inherit;
+    }
+
+    svg.ico {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      flex: none;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .top-bar-inner {
+      max-width: 1040px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+    }
+
+    .bar-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .bar-title-wrap.visible {
+      opacity: 1;
+    }
+
+    .bar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .local-chip {
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      flex: none;
+    }
+
+    .top-actions {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: none;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(24, 24, 27, 0.05);
+    }
+
+    .pill-btn {
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .pill-btn:hover {
+      background: #fafafa;
+      border-color: #d4d4d8;
+    }
+
+    /* Popover Menus */
+    .popover {
+      position: absolute;
+      top: 42px;
+      right: 0;
+      min-width: 204px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 6px;
+      z-index: 60;
+      display: none;
+    }
+
+    .popover.open {
+      display: block;
+    }
+
+    .menu-item {
+      width: 100%;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text);
+      font-size: 13px;
+      text-align: left;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .menu-item:hover {
+      background: #f4f4f5;
+    }
+
+    .menu-sep {
+      height: 1px;
+      background: var(--line);
+      margin: 4px 6px;
+    }
+
+    /* Sheet Paper */
+    .sheet-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 140px;
+    }
+
+    .sheet-paper {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px 28px;
+    }
+
+    .sheet-header-crop {
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .slice-viewport {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      background: var(--paper);
+    }
+
+    .slice-viewport.loading {
+      background: linear-gradient(90deg, #f4f4f5 25%, #e4e4e7 50%, #f4f4f5 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite linear;
+      border-radius: 6px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .slice-viewport img {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: auto;
+      max-width: none;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .systems-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sys-row {
+      position: relative;
+      transition: opacity 240ms ease;
+    }
+
+    .sheet-paper.started .sys-row:not(.is-active) {
+      opacity: 0.3;
+    }
+
+    .sheet-paper.started .sys-row:not(.is-active):hover {
+      opacity: 0.7;
+    }
+
+    .sys-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .karaoke-fill {
+      position: absolute;
+      border-radius: 4px;
+      background: linear-gradient(90deg, rgba(79, 70, 229, 0.08), rgba(79, 70, 229, 0.20));
+      mix-blend-mode: multiply;
+      opacity: 0;
+      pointer-events: none;
+      will-change: width;
+    }
+
+    .sys-row.is-active .karaoke-fill.visible {
+      opacity: 1;
+    }
+
+    .active-bar-box {
+      position: absolute;
+      border-radius: 6px;
+      background: rgba(79, 70, 229, 0.07);
+      mix-blend-mode: multiply;
+      opacity: 0;
+      transition: left 0.12s ease, width 0.12s ease, opacity 0.15s ease;
+      pointer-events: none;
+    }
+
+    .sys-row.is-active .active-bar-box.visible {
+      opacity: 1;
+    }
+
+    .playhead {
+      position: absolute;
+      width: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      transform: translateX(-50%);
+      opacity: 0;
+      pointer-events: none;
+      will-change: left;
+    }
+
+    .sys-row.is-active .playhead.visible {
+      opacity: 1;
+    }
+
+    .playhead::before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      transform: translateX(-50%);
+    }
+
+    .hotspots-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .bar-hotspot {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      pointer-events: auto;
+      background: transparent;
+      border: 0;
+      border-radius: 4px;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+
+    .bar-hotspot:hover,
+    .bar-hotspot:focus-visible {
+      background: rgba(24, 24, 27, 0.04);
+      outline: none;
+    }
+
+    /* Floating Locate Pill */
+    .locate-pill {
+      position: fixed;
+      left: 50%;
+      bottom: 96px;
+      transform: translateX(-50%) translateY(8px);
+      z-index: 44;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .locate-pill.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Floating Bottom Player */
+    .player-bar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 16px;
+      z-index: 45;
+      width: min(960px, calc(100% - 24px));
+      height: 68px;
+      padding: 0 16px;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .pb-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .skip-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .skip-btn:hover {
+      color: var(--text);
+      background: rgba(24, 24, 27, 0.05);
+    }
+
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 0;
+      background: var(--accent);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.32);
+      transition: transform 0.1s ease, filter 0.15s ease;
+    }
+
+    .play-btn:hover {
+      filter: brightness(1.06);
+    }
+
+    .play-btn:active {
+      transform: scale(0.96);
+    }
+
+    .pb-center {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .pb-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pb-info {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-size: 13px;
+    }
+
+    .pb-section {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .pb-dot {
+      color: var(--muted);
+    }
+
+    .pb-chord {
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pb-time {
+      font-size: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      flex: none;
+    }
+
+    /* Custom Scrubber */
+    .scrubber {
+      position: relative;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      touch-action: none;
+      outline: none;
+    }
+
+    .scrub-track {
+      position: relative;
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--line);
+      transition: height 0.12s ease;
+    }
+
+    .scrubber:hover .scrub-track,
+    .scrubber.dragging .scrub-track,
+    .scrubber:focus-visible .scrub-track {
+      height: 6px;
+    }
+
+    .scrub-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: var(--accent);
+      pointer-events: none;
+    }
+
+    .scrub-markers {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .scrub-tick {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--paper);
+      transform: translateX(-50%);
+      opacity: 0.92;
+    }
+
+    .scrub-thumb {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.12s ease;
+      pointer-events: none;
+    }
+
+    .scrubber:hover .scrub-thumb,
+    .scrubber.dragging .scrub-thumb,
+    .scrubber:focus-visible .scrub-thumb {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .scrub-tip {
+      position: absolute;
+      bottom: 24px;
+      left: 0%;
+      transform: translateX(-50%);
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--text);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s ease;
+    }
+
+    .scrub-tip.visible {
+      opacity: 1;
+    }
+
+    /* Speed Button & Popover */
+    .pb-right {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .speed-btn {
+      height: 30px;
+      min-width: 52px;
+      padding: 0 9px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .speed-btn:hover,
+    .speed-btn[aria-expanded="true"] {
+      background: #f4f4f5;
+      border-color: #d4d4d8;
+    }
+
+    .speed-popover {
+      position: absolute;
+      bottom: 50px;
+      right: 0;
+      width: 256px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      z-index: 65;
+      display: none;
+    }
+
+    .speed-popover.open {
+      display: block;
+    }
+
+    .speed-pop-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .speed-pop-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .speed-pop-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .speed-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .speed-reset {
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .speed-reset:hover {
+      color: var(--text);
+      background: #f4f4f5;
+    }
+
+    input[type="range"].speed-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(to right, var(--accent) 60%, var(--line) 60%);
+      outline: none;
+      cursor: pointer;
+      margin: 4px 0 12px;
+    }
+
+    input[type="range"].speed-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+      cursor: grab;
+    }
+
+    input[type="range"].speed-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+      cursor: grab;
+    }
+
+    .speed-presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .speed-preset {
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .speed-preset:hover {
+      background: #f4f4f5;
+    }
+
+    .speed-preset.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: rgba(79, 70, 229, 0.35);
+      font-weight: 600;
+    }
+
+    /* Fullscreen Drop Overlay */
+    .drop-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 98;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .drop-overlay.open {
+      display: flex;
+    }
+
+    .drop-box {
+      width: min(420px, 100%);
+      padding: 44px 24px;
+      border: 2px dashed var(--accent);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    /* Toasts */
+    .toasts {
+      position: fixed;
+      left: 50%;
+      bottom: 100px;
+      transform: translateX(-50%);
+      z-index: 95;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      width: min(440px, calc(100% - 24px));
+    }
+
+    .toast {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--text);
+      color: #ffffff;
+      font-size: 13px;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.error {
+      background: #b91c1c;
+    }
+
+    .toast-act {
+      padding: 3px 9px;
+      border-radius: 7px;
+      border: 0;
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: none;
+    }
+
+    .toast-act:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(24, 24, 27, 0.48);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(380px, 100%);
+      max-height: 92vh;
+      overflow-y: auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+    }
+
+    .modal-card.import-card {
+      width: min(480px, 100%);
+    }
+
+    .modal-card.wide {
+      width: min(1020px, 100%);
+      padding: 14px 16px;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .modal-filename {
+      font-size: 13px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: none;
+    }
+
+    .pdf-frame {
+      width: 100%;
+      height: min(80vh, 900px);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #f4f4f5;
+      display: block;
+    }
+
+    /* Guided Import Modal */
+    .import-hint {
+      background: #fafafa;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 12px;
+    }
+
+    .import-hint strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .import-hint code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: #f4f4f5;
+      color: var(--text);
+    }
+
+    .import-hint a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    .import-hint a:hover {
+      text-decoration: underline;
+    }
+
+    .modal-dropzone {
+      border: 1.5px dashed #d4d4d8;
+      border-radius: 12px;
+      background: #fafafa;
+      padding: 20px 16px;
+      text-align: center;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+      margin-bottom: 12px;
+    }
+
+    .modal-dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .dz-icon {
+      color: var(--accent);
+      margin-bottom: 6px;
+      display: inline-flex;
+    }
+
+    .dz-text {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+      margin: 0 0 12px;
+    }
+
+    .dz-btns {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .val-panel {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .val-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+    }
+
+    .val-row:last-child {
+      border-bottom: 0;
+    }
+
+    .val-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-weight: 500;
+      flex: none;
+    }
+
+    .val-ico {
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .val-ico.ok { color: var(--ok); }
+    .val-ico.warn { color: var(--warn); }
+    .val-ico.err { color: var(--err); }
+    .val-ico.muted { color: var(--muted); }
+
+    .val-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--line);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .val-detail {
+      color: var(--muted);
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .val-detail.ok { color: var(--ok); }
+    .val-detail.warn { color: var(--warn); }
+    .val-detail.err { color: var(--err); }
+
+    .import-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .import-privacy {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .import-footer-btns {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: none;
+    }
+
+    /* Calibration Form */
+    .cal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .cal-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .cal-field input[type="number"] {
+      height: 36px;
+      padding: 0 10px;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cal-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .cal-check input {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+    }
+
+    .cal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .btn-primary {
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 9px;
+      border: 0;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s ease, filter 0.15s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.06);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .btn-ghost {
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-ghost:hover {
+      background: #fafafa;
+    }
+
+    .hidden-input,
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 640px) {
+      .sheet-wrap {
+        padding: 12px 8px 128px;
+      }
+      .sheet-paper {
+        padding: 12px 6px;
+        border-radius: 12px;
+      }
+      .player-bar {
+        padding: 0 12px;
+        gap: 12px;
+      }
+      .import-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .import-footer-btns {
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .skip-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand-left">
+        <span class="brand-logo" aria-hidden="true">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </span>
+        <div class="bar-title-wrap" id="bar-title-wrap">
+          <span class="bar-title" id="bar-title">Call of Silence</span>
+          <span class="local-chip hidden" id="bar-local-chip">本地</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button type="button" class="pill-btn" id="import-btn">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          导入
+        </button>
+
+        <button type="button" class="icon-btn" id="open-pdf-btn" title="原版 PDF" aria-label="原版 PDF">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </button>
+
+        <button type="button" class="icon-btn" id="more-btn" title="更多" aria-label="更多" aria-haspopup="true" aria-expanded="false">
+          <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        </button>
+
+        <a class="icon-btn" href="https://github.com/zxsos/guitar-tab-player" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+        </a>
+
+        <!-- More Popover -->
+        <div class="popover" id="more-menu" role="menu">
+          <a class="menu-item" id="menu-dl-mp3" download role="menuitem">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            下载 MP3
+          </a>
+          <a class="menu-item" id="menu-dl-pdf" download role="menuitem">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            下载 PDF
+          </a>
+          <button type="button" class="menu-item" id="menu-export-json" role="menuitem">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            导出 sync_manifest.json
+          </button>
+          <button type="button" class="menu-item hidden" id="menu-calibrate" role="menuitem">
+            <svg class="ico" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+            校准时间轴…
+          </button>
+          <button type="button" class="menu-item hidden" id="menu-reset-builtin" role="menuitem">
+            <svg class="ico" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            恢复示例曲目
+          </button>
+          <div class="menu-sep"></div>
+          <a class="menu-item" href="https://github.com/zxsos/fingerstyle-guitar-tab-skill" target="_blank" rel="noopener" role="menuitem">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Skill 仓库
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <input type="file" id="dir-input" class="hidden-input" webkitdirectory directory multiple />
+  <input type="file" id="files-input" class="hidden-input" multiple accept=".zip,.mp3,.wav,.m4a,.ogg,.png,.json,.py,.pdf" />
+
+  <main class="sheet-wrap">
+    <section class="sheet-paper" id="sheet-paper" aria-label="六线谱">
+      <div class="sheet-header-crop" id="sheet-header-crop"></div>
+      <div class="systems-flow" id="systems-flow"></div>
+    </section>
+  </main>
+
+  <button type="button" class="locate-pill" id="locate-pill">
+    <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/></svg>
+    回到当前位置
+  </button>
+
+  <div class="player-bar" id="player-bar" role="region" aria-label="音频播放器">
+    <div class="pb-left">
+      <button type="button" class="skip-btn" id="seek-back" title="后退 5 秒" aria-label="后退 5 秒">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      </button>
+      <button type="button" class="play-btn" id="play-btn" title="播放 / 暂停" aria-label="播放 / 暂停">
+        <svg class="ico" id="play-icon" viewBox="0 0 24 24" style="fill:currentColor;stroke:none;margin-left:2px;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+        <svg class="ico hidden" id="pause-icon" viewBox="0 0 24 24" style="fill:currentColor;stroke:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+      <button type="button" class="skip-btn" id="seek-fwd" title="前进 5 秒" aria-label="前进 5 秒">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+      </button>
+    </div>
+
+    <div class="pb-center">
+      <div class="pb-meta">
+        <div class="pb-info">
+          <span class="pb-section" id="pb-section">Intro</span>
+          <span class="pb-dot" id="pb-dot">·</span>
+          <span class="pb-chord" id="pb-chord">M00</span>
+        </div>
+        <span class="pb-time" id="pb-time">0:00 / 0:00</span>
+      </div>
+      <div class="scrubber" id="scrubber" tabindex="0" role="slider" aria-label="播放进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="scrub-track">
+          <div class="scrub-fill" id="scrub-fill"></div>
+          <div class="scrub-markers" id="scrub-markers"></div>
+          <div class="scrub-thumb" id="scrub-thumb"></div>
+        </div>
+        <div class="scrub-tip" id="scrub-tip">M00 · 0:00</div>
+      </div>
+    </div>
+
+    <div class="pb-right">
+      <button type="button" class="speed-btn" id="speed-btn" title="调节播放速率" aria-label="调节播放速率" aria-haspopup="true" aria-expanded="false">1×</button>
+      <div class="speed-popover" id="speed-popover" role="dialog" aria-label="播放速率调节">
+        <div class="speed-pop-head">
+          <span class="speed-pop-label">播放速率</span>
+          <div class="speed-pop-right">
+            <span class="speed-val" id="speed-val">1.00×</span>
+            <button type="button" class="speed-reset hidden" id="speed-reset-btn">重置</button>
+          </div>
+        </div>
+        <input type="range" class="speed-slider" id="speed-slider" min="0.25" max="1.5" step="0.05" value="1" aria-label="拖动调节播放速率" />
+        <div class="speed-presets" id="speed-presets">
+          <button type="button" class="speed-preset" data-rate="0.25">0.25×</button>
+          <button type="button" class="speed-preset" data-rate="0.5">0.5×</button>
+          <button type="button" class="speed-preset" data-rate="0.65">0.65×</button>
+          <button type="button" class="speed-preset" data-rate="0.75">0.75×</button>
+          <button type="button" class="speed-preset" data-rate="0.85">0.85×</button>
+          <button type="button" class="speed-preset active" data-rate="1">1×</button>
+          <button type="button" class="speed-preset" data-rate="1.25">1.25×</button>
+          <button type="button" class="speed-preset" data-rate="1.5">1.5×</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="player" preload="metadata" class="hidden"></audio>
+
+  <!-- Global Drag & Drop Overlay -->
+  <div class="drop-overlay" id="drop-overlay" aria-hidden="true">
+    <div class="drop-box">
+      <svg class="ico" style="width:32px;height:32px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>松开以校验并导入</span>
+    </div>
+  </div>
+
+  <!-- Toast Stack -->
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <!-- Guided Import Modal -->
+  <div class="modal-backdrop" id="import-modal" role="dialog" aria-modal="true" aria-label="导入乐谱产物">
+    <div class="modal-card import-card">
+      <div class="modal-head">
+        <h2 class="modal-title">导入乐谱产物</h2>
+        <button type="button" class="icon-btn" id="close-import-btn" title="关闭" aria-label="关闭">
+          <svg class="ico" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="import-hint">
+        推荐直接拖入或选择 Skill 生成的 <strong>.zip 产物包</strong>（包含 <code>sync_manifest.json</code>、<code>*.mp3</code>、<code>previews/page-*.png</code>、可选 <code>*.pdf</code>），也支持直接选入作品文件夹或散文件。
+        <a href="https://raw.githubusercontent.com/zxsos/fingerstyle-guitar-tab-skill/main/examples/call-of-silence/Call_of_Silence_bundle.zip" download>下载示例 ZIP</a>
+      </div>
+
+      <div class="modal-dropzone" id="modal-dropzone">
+        <span class="dz-icon" aria-hidden="true">
+          <svg class="ico" style="width:26px;height:26px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </span>
+        <p class="dz-text">拖拽 .zip 产物包到此处，或点击选择文件</p>
+        <div class="dz-btns">
+          <button type="button" class="pill-btn" id="pick-files-btn">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            选择 ZIP / 文件
+          </button>
+          <button type="button" class="pill-btn" id="pick-dir-btn">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            选择文件夹
+          </button>
+        </div>
+      </div>
+
+      <div class="val-panel hidden" id="val-panel">
+        <div class="val-row">
+          <span class="val-left"><span class="val-ico muted" id="val-ico-source"></span>压缩包 / 来源</span>
+          <span class="val-detail" id="val-txt-source">-</span>
+        </div>
+        <div class="val-row">
+          <span class="val-left"><span class="val-ico muted" id="val-ico-audio"></span>音频文件</span>
+          <span class="val-detail" id="val-txt-audio">-</span>
+        </div>
+        <div class="val-row">
+          <span class="val-left"><span class="val-ico muted" id="val-ico-pages"></span>谱面预览</span>
+          <span class="val-detail" id="val-txt-pages">-</span>
+        </div>
+        <div class="val-row">
+          <span class="val-left"><span class="val-ico muted" id="val-ico-manifest"></span>同步清单</span>
+          <span class="val-detail" id="val-txt-manifest">-</span>
+        </div>
+        <div class="val-row">
+          <span class="val-left"><span class="val-ico muted" id="val-ico-pdf"></span>原版 PDF</span>
+          <span class="val-detail" id="val-txt-pdf">-</span>
+        </div>
+      </div>
+
+      <div class="import-footer">
+        <span class="import-privacy">本地校验与播放，不上传服务器</span>
+        <div class="import-footer-btns">
+          <button type="button" class="btn-ghost" id="import-cancel-btn">取消</button>
+          <button type="button" class="btn-primary" id="import-start-btn" disabled>开始练习</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF Modal -->
+  <div class="modal-backdrop" id="pdf-modal" role="dialog" aria-modal="true" aria-label="PDF 预览">
+    <div class="modal-card wide">
+      <div class="modal-head">
+        <span class="modal-filename" id="pdf-filename">Call_of_Silence_指弹吉他六线谱.pdf</span>
+        <div class="modal-actions">
+          <a class="icon-btn" id="pdf-newtab-link" target="_blank" rel="noopener" title="新标签页打开" aria-label="新标签页打开">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+          <a class="icon-btn" id="pdf-download-link" download title="下载" aria-label="下载">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </a>
+          <button type="button" class="icon-btn" id="close-pdf-btn" title="关闭" aria-label="关闭">
+            <svg class="ico" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <iframe class="pdf-frame" id="pdf-iframe" title="PDF 预览" src="about:blank"></iframe>
+    </div>
+  </div>
+
+  <!-- Calibration Modal -->
+  <div class="modal-backdrop" id="cal-modal" role="dialog" aria-modal="true" aria-label="校准时间轴">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 class="modal-title">校准时间轴</h2>
+        <button type="button" class="icon-btn" id="close-cal-btn" title="关闭" aria-label="关闭">
+          <svg class="ico" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="cal-form" id="cal-form">
+        <label class="cal-field">
+          BPM
+          <input type="number" id="cal-bpm" min="20" max="260" step="0.1" required />
+        </label>
+        <label class="cal-field">
+          起始偏移 (秒)
+          <input type="number" id="cal-leadin" min="0" max="30" step="0.01" required />
+        </label>
+        <label class="cal-check">
+          <input type="checkbox" id="cal-pickup" />
+          首小节弱起
+        </label>
+        <div class="cal-footer">
+          <button type="button" class="btn-ghost" id="cal-cancel-btn">取消</button>
+          <button type="submit" class="btn-primary">应用</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const BUILTIN_MANIFEST = {
+  "version": 1,
+  "title": "Call of Silence",
+  "subtitle": "《进击的巨人》第二季插曲 · 指弹吉他独奏六线谱（技巧编配版）",
+  "composer": "泽野弘之 (Hiroyuki Sawano)",
+  "arrangerInfo": "原调：1 = A / F#m  |  选调：G调指法 (Capo = 2品)  |  标准调弦：6E 5A 4D 3G 2B 1E",
+  "bpm": 72,
+  "capo": 2,
+  "duration": 151.8,
+  "audio": "Call_of_Silence_指弹吉他试听.mp3",
+  "pdf": "Call_of_Silence_指弹吉他六线谱.pdf",
+  "pages": [
+    "previews/page-1.png",
+    "previews/page-2.png",
+    "previews/page-3.png"
+  ],
+  "header": {
+    "page": 1,
+    "width": 1241,
+    "height": 1754,
+    "sliceY": [
+      71,
+      372
+    ]
+  },
+  "sections": [
+    {
+      "name": "Intro",
+      "bar": 0,
+      "start": 0.2083
+    },
+    {
+      "name": "Verse",
+      "bar": 10,
+      "start": 31.0417
+    },
+    {
+      "name": "Interlude",
+      "bar": 18,
+      "start": 57.7083
+    },
+    {
+      "name": "Chorus I",
+      "bar": 28,
+      "start": 91.0417
+    },
+    {
+      "name": "Chorus II & Outro",
+      "bar": 36,
+      "start": 117.7083
+    }
+  ],
+  "systems": [
+    {
+      "sysIdx": 0,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        374,
+        631
+      ],
+      "inkY": [
+        388,
+        621
+      ],
+      "staffY": [
+        498,
+        578
+      ],
+      "x0": 152.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 0,
+          "start": 0.2083,
+          "end": 1.0417,
+          "sec": "Intro",
+          "chords": "弱起 Pick-up",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 152.0,
+          "x1": 213.5
+        },
+        {
+          "bar": 1,
+          "start": 1.0417,
+          "end": 4.375,
+          "sec": "Intro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 213.5,
+          "x1": 459.5
+        },
+        {
+          "bar": 2,
+          "start": 4.375,
+          "end": 7.7083,
+          "sec": "Intro",
+          "chords": "Em9 → Bm7",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 459.5,
+          "x1": 718.5
+        },
+        {
+          "bar": 3,
+          "start": 7.7083,
+          "end": 11.0417,
+          "sec": "Intro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 718.5,
+          "x1": 944.5
+        },
+        {
+          "bar": 4,
+          "start": 11.0417,
+          "end": 14.375,
+          "sec": "Intro",
+          "chords": "Em",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 944.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 1,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        631,
+        864
+      ],
+      "inkY": [
+        642,
+        852
+      ],
+      "staffY": [
+        729,
+        809
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 5,
+          "start": 14.375,
+          "end": 17.7083,
+          "sec": "Intro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 1,
+          "page": 1,
+          "x0": 115.0,
+          "x1": 380.5
+        },
+        {
+          "bar": 6,
+          "start": 17.7083,
+          "end": 21.0417,
+          "sec": "Intro",
+          "chords": "Am7 → Em → Bm7",
+          "cue": "",
+          "sysIdx": 1,
+          "page": 1,
+          "x0": 380.5,
+          "x1": 666.0
+        },
+        {
+          "bar": 7,
+          "start": 21.0417,
+          "end": 24.375,
+          "sec": "Intro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 1,
+          "page": 1,
+          "x0": 666.0,
+          "x1": 917.5
+        },
+        {
+          "bar": 8,
+          "start": 24.375,
+          "end": 27.7083,
+          "sec": "Intro",
+          "chords": "Em9",
+          "cue": "",
+          "sysIdx": 1,
+          "page": 1,
+          "x0": 917.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 2,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        864,
+        1115
+      ],
+      "inkY": [
+        876,
+        1112
+      ],
+      "staffY": [
+        969,
+        1050
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 9,
+          "start": 27.7083,
+          "end": 31.0417,
+          "sec": "Intro",
+          "chords": "Em9",
+          "cue": "Don't you think...",
+          "sysIdx": 2,
+          "page": 1,
+          "x0": 115.0,
+          "x1": 451.5
+        },
+        {
+          "bar": 10,
+          "start": 31.0417,
+          "end": 34.375,
+          "sec": "Verse",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 2,
+          "page": 1,
+          "x0": 451.5,
+          "x1": 785.5
+        },
+        {
+          "bar": 11,
+          "start": 34.375,
+          "end": 37.7083,
+          "sec": "Verse",
+          "chords": "Em9",
+          "cue": "I've been burning...",
+          "sysIdx": 2,
+          "page": 1,
+          "x0": 785.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 3,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        1115,
+        1335
+      ],
+      "inkY": [
+        1119,
+        1333
+      ],
+      "staffY": [
+        1206,
+        1286
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 12,
+          "start": 37.7083,
+          "end": 41.0417,
+          "sec": "Verse",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 3,
+          "page": 1,
+          "x0": 115.0,
+          "x1": 648.5
+        },
+        {
+          "bar": 13,
+          "start": 41.0417,
+          "end": 44.375,
+          "sec": "Verse",
+          "chords": "Em9",
+          "cue": "I've got to face...",
+          "sysIdx": 3,
+          "page": 1,
+          "x0": 648.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 4,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        1335,
+        1572
+      ],
+      "inkY": [
+        1337,
+        1556
+      ],
+      "staffY": [
+        1425,
+        1506
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 14,
+          "start": 44.375,
+          "end": 47.7083,
+          "sec": "Verse",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 4,
+          "page": 1,
+          "x0": 115.0,
+          "x1": 396.5
+        },
+        {
+          "bar": 15,
+          "start": 47.7083,
+          "end": 51.0417,
+          "sec": "Verse",
+          "chords": "Em9",
+          "cue": "I won't run...",
+          "sysIdx": 4,
+          "page": 1,
+          "x0": 396.5,
+          "x1": 625.5
+        },
+        {
+          "bar": 16,
+          "start": 51.0417,
+          "end": 54.375,
+          "sec": "Verse",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 4,
+          "page": 1,
+          "x0": 625.5,
+          "x1": 873.5
+        },
+        {
+          "bar": 17,
+          "start": 54.375,
+          "end": 57.7083,
+          "sec": "Verse",
+          "chords": "Em",
+          "cue": "",
+          "sysIdx": 4,
+          "page": 1,
+          "x0": 873.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 5,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        98,
+        365
+      ],
+      "inkY": [
+        104,
+        351
+      ],
+      "staffY": [
+        220,
+        300
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 18,
+          "start": 57.7083,
+          "end": 61.0417,
+          "sec": "Interlude",
+          "chords": "Cmaj7 → Am7",
+          "cue": "",
+          "sysIdx": 5,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 445.5
+        },
+        {
+          "bar": 19,
+          "start": 61.0417,
+          "end": 64.375,
+          "sec": "Interlude",
+          "chords": "G → Bm7",
+          "cue": "",
+          "sysIdx": 5,
+          "page": 2,
+          "x0": 445.5,
+          "x1": 784.5
+        },
+        {
+          "bar": 20,
+          "start": 64.375,
+          "end": 67.7083,
+          "sec": "Interlude",
+          "chords": "Am7 → C",
+          "cue": "",
+          "sysIdx": 5,
+          "page": 2,
+          "x0": 784.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 6,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        366,
+        622
+      ],
+      "inkY": [
+        380,
+        606
+      ],
+      "staffY": [
+        481,
+        561
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 21,
+          "start": 67.7083,
+          "end": 71.0417,
+          "sec": "Interlude",
+          "chords": "G → Bm7",
+          "cue": "",
+          "sysIdx": 6,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 480.5
+        },
+        {
+          "bar": 22,
+          "start": 71.0417,
+          "end": 74.375,
+          "sec": "Interlude",
+          "chords": "Cmaj7 → Am7",
+          "cue": "",
+          "sysIdx": 6,
+          "page": 2,
+          "x0": 480.5,
+          "x1": 810.5
+        },
+        {
+          "bar": 23,
+          "start": 74.375,
+          "end": 77.7083,
+          "sec": "Interlude",
+          "chords": "G → Bm7",
+          "cue": "",
+          "sysIdx": 6,
+          "page": 2,
+          "x0": 810.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 7,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        675,
+        865
+      ],
+      "inkY": [
+        689,
+        849
+      ],
+      "staffY": [
+        742,
+        822
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 24,
+          "start": 77.7083,
+          "end": 81.0417,
+          "sec": "Interlude",
+          "chords": "D",
+          "cue": "",
+          "sysIdx": 7,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 478.5
+        },
+        {
+          "bar": 25,
+          "start": 81.0417,
+          "end": 84.375,
+          "sec": "Interlude",
+          "chords": "D/F#",
+          "cue": "",
+          "sysIdx": 7,
+          "page": 2,
+          "x0": 478.5,
+          "x1": 827.5
+        },
+        {
+          "bar": 26,
+          "start": 84.375,
+          "end": 87.7083,
+          "sec": "Interlude",
+          "chords": "G → D",
+          "cue": "",
+          "sysIdx": 7,
+          "page": 2,
+          "x0": 827.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 8,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        916,
+        1160
+      ],
+      "inkY": [
+        930,
+        1144
+      ],
+      "staffY": [
+        1003,
+        1083
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 27,
+          "start": 87.7083,
+          "end": 91.0417,
+          "sec": "Interlude",
+          "chords": "D",
+          "cue": "You will know...",
+          "sysIdx": 8,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 349.5
+        },
+        {
+          "bar": 28,
+          "start": 91.0417,
+          "end": 94.375,
+          "sec": "Chorus I",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 8,
+          "page": 2,
+          "x0": 349.5,
+          "x1": 715.5
+        },
+        {
+          "bar": 29,
+          "start": 94.375,
+          "end": 97.7083,
+          "sec": "Chorus I",
+          "chords": "Em → Am7",
+          "cue": "Must be ragged...",
+          "sysIdx": 8,
+          "page": 2,
+          "x0": 715.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 9,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        1199,
+        1433
+      ],
+      "inkY": [
+        1213,
+        1417
+      ],
+      "staffY": [
+        1264,
+        1344
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 30,
+          "start": 97.7083,
+          "end": 101.0417,
+          "sec": "Chorus I",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 9,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 443.5
+        },
+        {
+          "bar": 31,
+          "start": 101.0417,
+          "end": 104.375,
+          "sec": "Chorus I",
+          "chords": "Em → Am7",
+          "cue": "Even if my body's...",
+          "sysIdx": 9,
+          "page": 2,
+          "x0": 443.5,
+          "x1": 792.5
+        },
+        {
+          "bar": 32,
+          "start": 104.375,
+          "end": 107.7083,
+          "sec": "Chorus I",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 9,
+          "page": 2,
+          "x0": 792.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 10,
+      "page": 3,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        98,
+        345
+      ],
+      "inkY": [
+        103,
+        329
+      ],
+      "staffY": [
+        176,
+        256
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 33,
+          "start": 107.7083,
+          "end": 111.0417,
+          "sec": "Chorus I",
+          "chords": "Em → Am7",
+          "cue": "I don't want to go...",
+          "sysIdx": 10,
+          "page": 3,
+          "x0": 115.0,
+          "x1": 503.5
+        },
+        {
+          "bar": 34,
+          "start": 111.0417,
+          "end": 114.375,
+          "sec": "Chorus I",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 10,
+          "page": 3,
+          "x0": 503.5,
+          "x1": 819.0
+        },
+        {
+          "bar": 35,
+          "start": 114.375,
+          "end": 117.7083,
+          "sec": "Chorus I",
+          "chords": "Em → Bm7",
+          "cue": "So cry no more...",
+          "sysIdx": 10,
+          "page": 3,
+          "x0": 819.0,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 11,
+      "page": 3,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        404,
+        647
+      ],
+      "inkY": [
+        418,
+        631
+      ],
+      "staffY": [
+        488,
+        568
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 36,
+          "start": 117.7083,
+          "end": 121.0417,
+          "sec": "Chorus II & Outro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 11,
+          "page": 3,
+          "x0": 115.0,
+          "x1": 454.5
+        },
+        {
+          "bar": 37,
+          "start": 121.0417,
+          "end": 124.375,
+          "sec": "Chorus II & Outro",
+          "chords": "Em → Bm7",
+          "cue": "Go ahead, be proud...",
+          "sysIdx": 11,
+          "page": 3,
+          "x0": 454.5,
+          "x1": 800.5
+        },
+        {
+          "bar": 38,
+          "start": 124.375,
+          "end": 127.7083,
+          "sec": "Chorus II & Outro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 11,
+          "page": 3,
+          "x0": 800.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 12,
+      "page": 3,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        735,
+        957
+      ],
+      "inkY": [
+        749,
+        941
+      ],
+      "staffY": [
+        799,
+        880
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 39,
+          "start": 127.7083,
+          "end": 131.0417,
+          "sec": "Chorus II & Outro",
+          "chords": "Em → Bm7",
+          "cue": "You are the one...",
+          "sysIdx": 12,
+          "page": 3,
+          "x0": 115.0,
+          "x1": 441.5
+        },
+        {
+          "bar": 40,
+          "start": 131.0417,
+          "end": 134.375,
+          "sec": "Chorus II & Outro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 12,
+          "page": 3,
+          "x0": 441.5,
+          "x1": 749.5
+        },
+        {
+          "bar": 41,
+          "start": 134.375,
+          "end": 137.7083,
+          "sec": "Chorus II & Outro",
+          "chords": "Em → Bm7",
+          "cue": "You guide us far...",
+          "sysIdx": 12,
+          "page": 3,
+          "x0": 749.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 13,
+      "page": 3,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        1025,
+        1250
+      ],
+      "inkY": [
+        1039,
+        1234
+      ],
+      "staffY": [
+        1111,
+        1192
+      ],
+      "x0": 115.0,
+      "x1": 1157.8,
+      "bars": [
+        {
+          "bar": 42,
+          "start": 137.7083,
+          "end": 141.0417,
+          "sec": "Chorus II & Outro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 13,
+          "page": 3,
+          "x0": 115.0,
+          "x1": 569.5
+        },
+        {
+          "bar": 43,
+          "start": 141.0417,
+          "end": 144.375,
+          "sec": "Chorus II & Outro",
+          "chords": "Em → Em9",
+          "cue": "",
+          "sysIdx": 13,
+          "page": 3,
+          "x0": 569.5,
+          "x1": 1026.5
+        },
+        {
+          "bar": 44,
+          "start": 144.375,
+          "end": 151.8,
+          "sec": "Chorus II & Outro",
+          "chords": "Em",
+          "cue": "",
+          "sysIdx": 13,
+          "page": 3,
+          "x0": 1026.5,
+          "x1": 1157.8
+        }
+      ]
+    }
+  ],
+  "bars": [
+    {
+      "bar": 0,
+      "start": 0.2083,
+      "end": 1.0417,
+      "sec": "Intro",
+      "chords": "弱起 Pick-up",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 152.0,
+      "x1": 213.5
+    },
+    {
+      "bar": 1,
+      "start": 1.0417,
+      "end": 4.375,
+      "sec": "Intro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 213.5,
+      "x1": 459.5
+    },
+    {
+      "bar": 2,
+      "start": 4.375,
+      "end": 7.7083,
+      "sec": "Intro",
+      "chords": "Em9 → Bm7",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 459.5,
+      "x1": 718.5
+    },
+    {
+      "bar": 3,
+      "start": 7.7083,
+      "end": 11.0417,
+      "sec": "Intro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 718.5,
+      "x1": 944.5
+    },
+    {
+      "bar": 4,
+      "start": 11.0417,
+      "end": 14.375,
+      "sec": "Intro",
+      "chords": "Em",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 944.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 5,
+      "start": 14.375,
+      "end": 17.7083,
+      "sec": "Intro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 1,
+      "page": 1,
+      "x0": 115.0,
+      "x1": 380.5
+    },
+    {
+      "bar": 6,
+      "start": 17.7083,
+      "end": 21.0417,
+      "sec": "Intro",
+      "chords": "Am7 → Em → Bm7",
+      "cue": "",
+      "sysIdx": 1,
+      "page": 1,
+      "x0": 380.5,
+      "x1": 666.0
+    },
+    {
+      "bar": 7,
+      "start": 21.0417,
+      "end": 24.375,
+      "sec": "Intro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 1,
+      "page": 1,
+      "x0": 666.0,
+      "x1": 917.5
+    },
+    {
+      "bar": 8,
+      "start": 24.375,
+      "end": 27.7083,
+      "sec": "Intro",
+      "chords": "Em9",
+      "cue": "",
+      "sysIdx": 1,
+      "page": 1,
+      "x0": 917.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 9,
+      "start": 27.7083,
+      "end": 31.0417,
+      "sec": "Intro",
+      "chords": "Em9",
+      "cue": "Don't you think...",
+      "sysIdx": 2,
+      "page": 1,
+      "x0": 115.0,
+      "x1": 451.5
+    },
+    {
+      "bar": 10,
+      "start": 31.0417,
+      "end": 34.375,
+      "sec": "Verse",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 2,
+      "page": 1,
+      "x0": 451.5,
+      "x1": 785.5
+    },
+    {
+      "bar": 11,
+      "start": 34.375,
+      "end": 37.7083,
+      "sec": "Verse",
+      "chords": "Em9",
+      "cue": "I've been burning...",
+      "sysIdx": 2,
+      "page": 1,
+      "x0": 785.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 12,
+      "start": 37.7083,
+      "end": 41.0417,
+      "sec": "Verse",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 3,
+      "page": 1,
+      "x0": 115.0,
+      "x1": 648.5
+    },
+    {
+      "bar": 13,
+      "start": 41.0417,
+      "end": 44.375,
+      "sec": "Verse",
+      "chords": "Em9",
+      "cue": "I've got to face...",
+      "sysIdx": 3,
+      "page": 1,
+      "x0": 648.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 14,
+      "start": 44.375,
+      "end": 47.7083,
+      "sec": "Verse",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 4,
+      "page": 1,
+      "x0": 115.0,
+      "x1": 396.5
+    },
+    {
+      "bar": 15,
+      "start": 47.7083,
+      "end": 51.0417,
+      "sec": "Verse",
+      "chords": "Em9",
+      "cue": "I won't run...",
+      "sysIdx": 4,
+      "page": 1,
+      "x0": 396.5,
+      "x1": 625.5
+    },
+    {
+      "bar": 16,
+      "start": 51.0417,
+      "end": 54.375,
+      "sec": "Verse",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 4,
+      "page": 1,
+      "x0": 625.5,
+      "x1": 873.5
+    },
+    {
+      "bar": 17,
+      "start": 54.375,
+      "end": 57.7083,
+      "sec": "Verse",
+      "chords": "Em",
+      "cue": "",
+      "sysIdx": 4,
+      "page": 1,
+      "x0": 873.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 18,
+      "start": 57.7083,
+      "end": 61.0417,
+      "sec": "Interlude",
+      "chords": "Cmaj7 → Am7",
+      "cue": "",
+      "sysIdx": 5,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 445.5
+    },
+    {
+      "bar": 19,
+      "start": 61.0417,
+      "end": 64.375,
+      "sec": "Interlude",
+      "chords": "G → Bm7",
+      "cue": "",
+      "sysIdx": 5,
+      "page": 2,
+      "x0": 445.5,
+      "x1": 784.5
+    },
+    {
+      "bar": 20,
+      "start": 64.375,
+      "end": 67.7083,
+      "sec": "Interlude",
+      "chords": "Am7 → C",
+      "cue": "",
+      "sysIdx": 5,
+      "page": 2,
+      "x0": 784.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 21,
+      "start": 67.7083,
+      "end": 71.0417,
+      "sec": "Interlude",
+      "chords": "G → Bm7",
+      "cue": "",
+      "sysIdx": 6,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 480.5
+    },
+    {
+      "bar": 22,
+      "start": 71.0417,
+      "end": 74.375,
+      "sec": "Interlude",
+      "chords": "Cmaj7 → Am7",
+      "cue": "",
+      "sysIdx": 6,
+      "page": 2,
+      "x0": 480.5,
+      "x1": 810.5
+    },
+    {
+      "bar": 23,
+      "start": 74.375,
+      "end": 77.7083,
+      "sec": "Interlude",
+      "chords": "G → Bm7",
+      "cue": "",
+      "sysIdx": 6,
+      "page": 2,
+      "x0": 810.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 24,
+      "start": 77.7083,
+      "end": 81.0417,
+      "sec": "Interlude",
+      "chords": "D",
+      "cue": "",
+      "sysIdx": 7,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 478.5
+    },
+    {
+      "bar": 25,
+      "start": 81.0417,
+      "end": 84.375,
+      "sec": "Interlude",
+      "chords": "D/F#",
+      "cue": "",
+      "sysIdx": 7,
+      "page": 2,
+      "x0": 478.5,
+      "x1": 827.5
+    },
+    {
+      "bar": 26,
+      "start": 84.375,
+      "end": 87.7083,
+      "sec": "Interlude",
+      "chords": "G → D",
+      "cue": "",
+      "sysIdx": 7,
+      "page": 2,
+      "x0": 827.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 27,
+      "start": 87.7083,
+      "end": 91.0417,
+      "sec": "Interlude",
+      "chords": "D",
+      "cue": "You will know...",
+      "sysIdx": 8,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 349.5
+    },
+    {
+      "bar": 28,
+      "start": 91.0417,
+      "end": 94.375,
+      "sec": "Chorus I",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 8,
+      "page": 2,
+      "x0": 349.5,
+      "x1": 715.5
+    },
+    {
+      "bar": 29,
+      "start": 94.375,
+      "end": 97.7083,
+      "sec": "Chorus I",
+      "chords": "Em → Am7",
+      "cue": "Must be ragged...",
+      "sysIdx": 8,
+      "page": 2,
+      "x0": 715.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 30,
+      "start": 97.7083,
+      "end": 101.0417,
+      "sec": "Chorus I",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 9,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 443.5
+    },
+    {
+      "bar": 31,
+      "start": 101.0417,
+      "end": 104.375,
+      "sec": "Chorus I",
+      "chords": "Em → Am7",
+      "cue": "Even if my body's...",
+      "sysIdx": 9,
+      "page": 2,
+      "x0": 443.5,
+      "x1": 792.5
+    },
+    {
+      "bar": 32,
+      "start": 104.375,
+      "end": 107.7083,
+      "sec": "Chorus I",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 9,
+      "page": 2,
+      "x0": 792.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 33,
+      "start": 107.7083,
+      "end": 111.0417,
+      "sec": "Chorus I",
+      "chords": "Em → Am7",
+      "cue": "I don't want to go...",
+      "sysIdx": 10,
+      "page": 3,
+      "x0": 115.0,
+      "x1": 503.5
+    },
+    {
+      "bar": 34,
+      "start": 111.0417,
+      "end": 114.375,
+      "sec": "Chorus I",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 10,
+      "page": 3,
+      "x0": 503.5,
+      "x1": 819.0
+    },
+    {
+      "bar": 35,
+      "start": 114.375,
+      "end": 117.7083,
+      "sec": "Chorus I",
+      "chords": "Em → Bm7",
+      "cue": "So cry no more...",
+      "sysIdx": 10,
+      "page": 3,
+      "x0": 819.0,
+      "x1": 1161.5
+    },
+    {
+      "bar": 36,
+      "start": 117.7083,
+      "end": 121.0417,
+      "sec": "Chorus II & Outro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 11,
+      "page": 3,
+      "x0": 115.0,
+      "x1": 454.5
+    },
+    {
+      "bar": 37,
+      "start": 121.0417,
+      "end": 124.375,
+      "sec": "Chorus II & Outro",
+      "chords": "Em → Bm7",
+      "cue": "Go ahead, be proud...",
+      "sysIdx": 11,
+      "page": 3,
+      "x0": 454.5,
+      "x1": 800.5
+    },
+    {
+      "bar": 38,
+      "start": 124.375,
+      "end": 127.7083,
+      "sec": "Chorus II & Outro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 11,
+      "page": 3,
+      "x0": 800.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 39,
+      "start": 127.7083,
+      "end": 131.0417,
+      "sec": "Chorus II & Outro",
+      "chords": "Em → Bm7",
+      "cue": "You are the one...",
+      "sysIdx": 12,
+      "page": 3,
+      "x0": 115.0,
+      "x1": 441.5
+    },
+    {
+      "bar": 40,
+      "start": 131.0417,
+      "end": 134.375,
+      "sec": "Chorus II & Outro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 12,
+      "page": 3,
+      "x0": 441.5,
+      "x1": 749.5
+    },
+    {
+      "bar": 41,
+      "start": 134.375,
+      "end": 137.7083,
+      "sec": "Chorus II & Outro",
+      "chords": "Em → Bm7",
+      "cue": "You guide us far...",
+      "sysIdx": 12,
+      "page": 3,
+      "x0": 749.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 42,
+      "start": 137.7083,
+      "end": 141.0417,
+      "sec": "Chorus II & Outro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 13,
+      "page": 3,
+      "x0": 115.0,
+      "x1": 569.5
+    },
+    {
+      "bar": 43,
+      "start": 141.0417,
+      "end": 144.375,
+      "sec": "Chorus II & Outro",
+      "chords": "Em → Em9",
+      "cue": "",
+      "sysIdx": 13,
+      "page": 3,
+      "x0": 569.5,
+      "x1": 1026.5
+    },
+    {
+      "bar": 44,
+      "start": 144.375,
+      "end": 151.8,
+      "sec": "Chorus II & Outro",
+      "chords": "Em",
+      "cue": "",
+      "sysIdx": 13,
+      "page": 3,
+      "x0": 1026.5,
+      "x1": 1157.8
+    }
+  ]
+};
+
+      const player = document.getElementById("player");
+      const topBar = document.querySelector(".top-bar");
+      const barTitleWrap = document.getElementById("bar-title-wrap");
+      const barTitle = document.getElementById("bar-title");
+      const barLocalChip = document.getElementById("bar-local-chip");
+
+      const importBtn = document.getElementById("import-btn");
+      const moreBtn = document.getElementById("more-btn");
+      const moreMenu = document.getElementById("more-menu");
+      const openPdfBtn = document.getElementById("open-pdf-btn");
+      const menuDlMp3 = document.getElementById("menu-dl-mp3");
+      const menuDlPdf = document.getElementById("menu-dl-pdf");
+      const menuCalibrate = document.getElementById("menu-calibrate");
+      const menuResetBuiltin = document.getElementById("menu-reset-builtin");
+
+      const sheetPaper = document.getElementById("sheet-paper");
+      const headerCropEl = document.getElementById("sheet-header-crop");
+      const systemsFlowEl = document.getElementById("systems-flow");
+      const locatePill = document.getElementById("locate-pill");
+
+      const playerBar = document.getElementById("player-bar");
+      const playBtn = document.getElementById("play-btn");
+      const playIcon = document.getElementById("play-icon");
+      const pauseIcon = document.getElementById("pause-icon");
+      const pbSection = document.getElementById("pb-section");
+      const pbDot = document.getElementById("pb-dot");
+      const pbChord = document.getElementById("pb-chord");
+      const pbTime = document.getElementById("pb-time");
+
+      const speedBtn = document.getElementById("speed-btn");
+      const speedPopover = document.getElementById("speed-popover");
+      const speedValEl = document.getElementById("speed-val");
+      const speedResetBtn = document.getElementById("speed-reset-btn");
+      const speedSlider = document.getElementById("speed-slider");
+      const speedPresetBtns = Array.from(document.querySelectorAll(".speed-preset"));
+
+      const scrubber = document.getElementById("scrubber");
+      const scrubFill = document.getElementById("scrub-fill");
+      const scrubMarkers = document.getElementById("scrub-markers");
+      const scrubThumb = document.getElementById("scrub-thumb");
+      const scrubTip = document.getElementById("scrub-tip");
+
+      const dropOverlay = document.getElementById("drop-overlay");
+      const toastsEl = document.getElementById("toasts");
+
+      const importModal = document.getElementById("import-modal");
+      const modalDropzone = document.getElementById("modal-dropzone");
+      const valPanel = document.getElementById("val-panel");
+      const importStartBtn = document.getElementById("import-start-btn");
+
+      const pdfModal = document.getElementById("pdf-modal");
+      const pdfIframe = document.getElementById("pdf-iframe");
+      const pdfFilename = document.getElementById("pdf-filename");
+      const pdfNewtabLink = document.getElementById("pdf-newtab-link");
+      const pdfDownloadLink = document.getElementById("pdf-download-link");
+
+      const calModal = document.getElementById("cal-modal");
+      const calForm = document.getElementById("cal-form");
+      const calBpmInput = document.getElementById("cal-bpm");
+      const calLeadInInput = document.getElementById("cal-leadin");
+      const calPickupInput = document.getElementById("cal-pickup");
+
+      const dirInput = document.getElementById("dir-input");
+      const filesInput = document.getElementById("files-input");
+
+      let playbackRate = 1;
+      let activeManifest = null;
+      let activePageUrls = [];
+      let activeObjectUrls = [];
+      let activeDetection = null;
+      let stagedReady = null;
+      let activeTitle = "";
+      let isImported = false;
+      let hasStarted = false;
+      let followPaused = false;
+      let programmaticScrollUntil = 0;
+      let rowRefs = [];
+      let lastSysIdx = -1;
+      let rafId = null;
+      let headerObserver = null;
+      let draggingScrub = false;
+
+      function fmtTime(sec) {
+        const s = Math.max(0, Math.floor(sec));
+        const m = Math.floor(s / 60);
+        const r = s % 60;
+        return m + ":" + (r < 10 ? "0" : "") + r;
+      }
+
+      function getDuration() {
+        if (Number.isFinite(player.duration) && player.duration > 0) return player.duration;
+        return activeManifest && activeManifest.duration ? activeManifest.duration : 0;
+      }
+
+      function revokeImportedUrls() {
+        activeObjectUrls.forEach((u) => URL.revokeObjectURL(u));
+        activeObjectUrls = [];
+      }
+
+      function closePopovers() {
+        moreMenu.classList.remove("open");
+        moreBtn.setAttribute("aria-expanded", "false");
+        speedPopover.classList.remove("open");
+        speedBtn.setAttribute("aria-expanded", "false");
+      }
+
+      function togglePopover(pop, btn) {
+        const wasOpen = pop.classList.contains("open");
+        closePopovers();
+        if (!wasOpen) {
+          pop.classList.add("open");
+          btn.setAttribute("aria-expanded", "true");
+        }
+      }
+
+      function setSpeed(rate) {
+        const clamped = Math.max(0.25, Math.min(1.5, Math.round(rate * 100) / 100));
+        playbackRate = clamped;
+        player.playbackRate = clamped;
+        speedSlider.value = String(clamped);
+        const pct = ((clamped - 0.25) / (1.5 - 0.25)) * 100;
+        speedSlider.style.background =
+          "linear-gradient(to right, var(--accent) " + pct.toFixed(1) + "%, var(--line) " + pct.toFixed(1) + "%)";
+        speedValEl.textContent = clamped.toFixed(2) + "×";
+        speedBtn.textContent = Number(clamped.toFixed(2)) + "×";
+        speedResetBtn.classList.toggle("hidden", Math.abs(clamped - 1) < 0.001);
+        speedPresetBtns.forEach((b) => {
+          b.classList.toggle("active", Math.abs(Number(b.dataset.rate) - clamped) < 0.001);
+        });
+      }
+
+      function showToast(msg, opts) {
+        const o = opts || {};
+        const el = document.createElement("div");
+        el.className = "toast" + (o.type === "error" ? " error" : "");
+
+        const txt = document.createElement("span");
+        txt.textContent = msg;
+        el.appendChild(txt);
+
+        if (o.actionLabel && o.onAction) {
+          const act = document.createElement("button");
+          act.type = "button";
+          act.className = "toast-act";
+          act.textContent = o.actionLabel;
+          act.addEventListener("click", () => {
+            o.onAction();
+            el.remove();
+          });
+          el.appendChild(act);
+        }
+
+        toastsEl.appendChild(el);
+        if (o.duration > 0) {
+          setTimeout(() => el.remove(), o.duration);
+        }
+        return el;
+      }
+
+      function createSliceViewport(imgUrl, natW, sliceY0, sliceY1) {
+        const sliceH = Math.max(1, sliceY1 - sliceY0);
+        const vp = document.createElement("div");
+        vp.className = "slice-viewport loading";
+        vp.style.paddingTop = ((sliceH / natW) * 100).toFixed(4) + "%";
+
+        const img = document.createElement("img");
+        img.alt = "六线谱";
+        img.draggable = false;
+        img.style.top = (-(sliceY0 / sliceH) * 100).toFixed(4) + "%";
+        img.addEventListener("load", () => vp.classList.remove("loading"), { once: true });
+        img.addEventListener("error", () => vp.classList.remove("loading"), { once: true });
+        img.src = imgUrl;
+        if (img.complete) vp.classList.remove("loading");
+
+        vp.appendChild(img);
+        return vp;
+      }
+
+      function markStarted() {
+        if (!hasStarted) {
+          hasStarted = true;
+          sheetPaper.classList.add("started");
+        }
+      }
+
+      function updatePlayIcon() {
+        const playing = !player.paused && !player.ended;
+        playIcon.classList.toggle("hidden", playing);
+        pauseIcon.classList.toggle("hidden", !playing);
+      }
+
+      function setMedia(audioUrl, pdfUrl, pdfName) {
+        player.pause();
+        stopRaf();
+        locatePill.classList.remove("visible");
+        player.src = audioUrl;
+        player.load();
+        player.playbackRate = playbackRate;
+        updatePlayIcon();
+
+        menuDlMp3.href = audioUrl;
+        menuDlMp3.download = (activeManifest && activeManifest.audio) ? activeManifest.audio : "audio.mp3";
+
+        if (pdfUrl) {
+          openPdfBtn.classList.remove("hidden");
+          menuDlPdf.classList.remove("hidden");
+          menuDlPdf.href = pdfUrl;
+          menuDlPdf.download = pdfName || "score.pdf";
+          pdfFilename.textContent = pdfName || "score.pdf";
+          pdfNewtabLink.href = pdfUrl;
+          pdfDownloadLink.href = pdfUrl;
+          pdfDownloadLink.download = pdfName || "score.pdf";
+          pdfIframe.dataset.src = pdfUrl;
+          pdfIframe.setAttribute("src", "about:blank");
+        } else {
+          openPdfBtn.classList.add("hidden");
+          menuDlPdf.classList.add("hidden");
+          delete pdfIframe.dataset.src;
+          pdfIframe.setAttribute("src", "about:blank");
+        }
+      }
+
+      function setupHeaderObserver(hasHeader) {
+        if (headerObserver) {
+          headerObserver.disconnect();
+          headerObserver = null;
+        }
+        if (!hasHeader) {
+          barTitleWrap.classList.add("visible");
+          return;
+        }
+        barTitleWrap.classList.remove("visible");
+        headerObserver = new IntersectionObserver(
+          (entries) => {
+            const visible = entries[0] && entries[0].isIntersecting;
+            barTitleWrap.classList.toggle("visible", !visible);
+          },
+          { rootMargin: "-56px 0px 0px 0px", threshold: 0.05 }
+        );
+        headerObserver.observe(headerCropEl);
+      }
+
+      function renderManifest(manifest, pageUrls) {
+        activeManifest = manifest;
+        activePageUrls = pageUrls;
+        const title = manifest.title || "未命名作品";
+        activeTitle = title;
+        barTitle.textContent = title;
+        document.title = title + " · 指弹六线谱";
+        if (manifest.audio) menuDlMp3.download = manifest.audio;
+        barLocalChip.classList.toggle("hidden", !isImported);
+        menuResetBuiltin.classList.toggle("hidden", !isImported);
+        menuCalibrate.classList.toggle("hidden", !activeDetection);
+
+        // Header crop
+        headerCropEl.innerHTML = "";
+        const hasHeader = Boolean(manifest.header && pageUrls[manifest.header.page - 1]);
+        if (hasHeader) {
+          headerCropEl.classList.remove("hidden");
+          const h = manifest.header;
+          headerCropEl.appendChild(
+            createSliceViewport(pageUrls[h.page - 1], h.width, h.sliceY[0], h.sliceY[1])
+          );
+        } else {
+          headerCropEl.classList.add("hidden");
+        }
+        setupHeaderObserver(hasHeader);
+
+        // Scrubber section markers
+        scrubMarkers.innerHTML = "";
+        const dur = getDuration();
+        if (dur > 0 && manifest.sections) {
+          manifest.sections.forEach((sec) => {
+            if (sec.start <= 0.5) return;
+            const pct = Math.min(99.5, Math.max(0.5, (sec.start / dur) * 100));
+            const tick = document.createElement("span");
+            tick.className = "scrub-tick";
+            tick.style.left = pct.toFixed(3) + "%";
+            scrubMarkers.appendChild(tick);
+          });
+        }
+
+        // System rows
+        systemsFlowEl.innerHTML = "";
+        rowRefs = [];
+        manifest.systems.forEach((sys) => {
+          const row = document.createElement("article");
+          row.className = "sys-row";
+          row.dataset.sysIdx = String(sys.sysIdx);
+
+          const imgUrl = pageUrls[sys.page - 1];
+          const [sy0, sy1] = sys.sliceY;
+          const sliceH = Math.max(1, sy1 - sy0);
+          const vp = createSliceViewport(imgUrl, sys.width, sy0, sy1);
+
+          const overlay = document.createElement("div");
+          overlay.className = "sys-overlay";
+
+          const fillTop = Math.max(0, sys.staffY[0] - 8 - sy0);
+          const fillH = Math.max(1, Math.min(sliceH, sys.staffY[1] + 8 - sy0) - fillTop);
+          const boxTop = Math.max(0, sys.staffY[0] - 10 - sy0);
+          const boxH = Math.max(1, Math.min(sliceH, sys.staffY[1] + 10 - sy0) - boxTop);
+          const needleTop = Math.max(0, sys.staffY[0] - 14 - sy0);
+          const needleH = Math.max(1, Math.min(sliceH, sys.staffY[1] + 14 - sy0) - needleTop);
+
+          const karaokeFill = document.createElement("div");
+          karaokeFill.className = "karaoke-fill";
+          karaokeFill.style.top = (fillTop / sliceH * 100).toFixed(4) + "%";
+          karaokeFill.style.height = (fillH / sliceH * 100).toFixed(4) + "%";
+          karaokeFill.style.left = ((sys.x0 / sys.width) * 100).toFixed(4) + "%";
+          karaokeFill.style.width = "0%";
+
+          const activeBarBox = document.createElement("div");
+          activeBarBox.className = "active-bar-box";
+          activeBarBox.style.top = (boxTop / sliceH * 100).toFixed(4) + "%";
+          activeBarBox.style.height = (boxH / sliceH * 100).toFixed(4) + "%";
+
+          const playhead = document.createElement("div");
+          playhead.className = "playhead";
+          playhead.style.top = (needleTop / sliceH * 100).toFixed(4) + "%";
+          playhead.style.height = (needleH / sliceH * 100).toFixed(4) + "%";
+
+          const hotspotsLayer = document.createElement("div");
+          hotspotsLayer.className = "hotspots-layer";
+          sys.bars.forEach((b) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "bar-hotspot";
+            btn.style.left = ((b.x0 / sys.width) * 100).toFixed(4) + "%";
+            btn.style.width = (((b.x1 - b.x0) / sys.width) * 100).toFixed(4) + "%";
+            const label = "M" + b.bar + " · " + fmtTime(b.start);
+            btn.title = label;
+            btn.setAttribute("aria-label", label);
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              seekAndPlayBar(b);
+            });
+            hotspotsLayer.appendChild(btn);
+          });
+
+          overlay.append(karaokeFill, activeBarBox, playhead, hotspotsLayer);
+          vp.appendChild(overlay);
+          row.appendChild(vp);
+          systemsFlowEl.appendChild(row);
+
+          rowRefs.push({ sys, row, karaokeFill, activeBarBox, playhead });
+        });
+
+        lastSysIdx = 0;
+        renderSync(player.currentTime || 0);
+      }
+
+      function findPlaybackState(t) {
+        const bars = activeManifest.bars;
+        let activeBar = bars[0];
+        if (t >= bars[bars.length - 1].end) {
+          activeBar = bars[bars.length - 1];
+        } else if (t > bars[0].start) {
+          for (let i = 0; i < bars.length; i++) {
+            if (t >= bars[i].start && t < bars[i].end) {
+              activeBar = bars[i];
+              break;
+            }
+          }
+        }
+        const sys = activeManifest.systems[activeBar.sysIdx];
+        const span = Math.max(0.001, activeBar.end - activeBar.start);
+        const frac = Math.max(0, Math.min(1, (t - activeBar.start) / span));
+        const cursorX = activeBar.x0 + (activeBar.x1 - activeBar.x0) * frac;
+        return { bar: activeBar, sys, cursorX };
+      }
+
+      function setFollowPaused(paused) {
+        followPaused = paused;
+        locatePill.classList.toggle("visible", paused && !player.paused);
+      }
+
+      function scrollToSystem(sysIdx, force) {
+        if (!force && followPaused) return;
+        const ref = rowRefs[sysIdx];
+        if (!ref) return;
+        const rect = ref.row.getBoundingClientRect();
+        if (rect.height <= 0) return;
+
+        const topBarH = topBar.getBoundingClientRect().height;
+        const playerBarH = playerBar.getBoundingClientRect().height;
+        const avail = Math.max(120, window.innerHeight - topBarH - playerBarH - 32 - rect.height);
+        const targetY = Math.max(0, rect.top + window.scrollY - topBarH - Math.max(16, avail * 0.35));
+
+        programmaticScrollUntil = performance.now() + 900;
+        window.scrollTo({ top: targetY, behavior: "smooth" });
+      }
+
+      function seekAndPlayBar(bar) {
+        markStarted();
+        setFollowPaused(false);
+        const targetTime = bar.bar === 0 ? 0.0 : bar.start;
+        const sysChanged = bar.sysIdx !== lastSysIdx;
+        player.currentTime = targetTime;
+        lastSysIdx = bar.sysIdx;
+        renderSync(targetTime);
+        if (sysChanged) {
+          scrollToSystem(bar.sysIdx, true);
+        }
+        player.play().catch(() => {});
+      }
+
+      function seekToTime(targetSec, resumeFollow) {
+        markStarted();
+        const dur = getDuration();
+        const clamped = Math.max(0, Math.min(dur, targetSec));
+        if (resumeFollow) setFollowPaused(false);
+        player.currentTime = clamped;
+        const state = findPlaybackState(clamped);
+        lastSysIdx = state.sys.sysIdx;
+        renderSync(clamped);
+        if (resumeFollow) scrollToSystem(state.sys.sysIdx, true);
+      }
+
+      function renderSync(t) {
+        if (!activeManifest) return;
+        const { bar, sys, cursorX } = findPlaybackState(t);
+        const dur = getDuration();
+        const pct = dur > 0 ? Math.max(0, Math.min(100, (t / dur) * 100)) : 0;
+
+        pbSection.textContent = bar.sec || activeTitle;
+        const chordTxt = bar.chords || ("M" + String(bar.bar).padStart(2, "0"));
+        pbChord.textContent = chordTxt;
+        pbDot.classList.toggle("hidden", !chordTxt);
+        pbTime.textContent = fmtTime(t) + " / " + fmtTime(dur);
+
+        if (!draggingScrub) {
+          scrubFill.style.width = pct.toFixed(3) + "%";
+          scrubThumb.style.left = pct.toFixed(3) + "%";
+          scrubber.setAttribute("aria-valuenow", String(Math.round(pct)));
+        }
+
+        rowRefs.forEach((ref, idx) => {
+          const isCur = idx === sys.sysIdx;
+          ref.row.classList.toggle("is-active", isCur);
+
+          if (!isCur || !hasStarted) {
+            ref.karaokeFill.classList.remove("visible");
+            ref.activeBarBox.classList.remove("visible");
+            ref.playhead.classList.remove("visible");
+            return;
+          }
+
+          ref.karaokeFill.style.width = (Math.max(0, cursorX - sys.x0) / sys.width * 100).toFixed(4) + "%";
+          ref.karaokeFill.classList.add("visible");
+
+          ref.activeBarBox.style.left = ((bar.x0 / sys.width) * 100).toFixed(4) + "%";
+          ref.activeBarBox.style.width = (((bar.x1 - bar.x0) / sys.width) * 100).toFixed(4) + "%";
+          ref.activeBarBox.classList.add("visible");
+
+          ref.playhead.style.left = ((cursorX / sys.width) * 100).toFixed(4) + "%";
+          ref.playhead.classList.add("visible");
+        });
+
+        if (sys.sysIdx !== lastSysIdx) {
+          const prev = lastSysIdx;
+          lastSysIdx = sys.sysIdx;
+          if (prev !== -1 && !player.paused && !followPaused) {
+            scrollToSystem(sys.sysIdx, false);
+          }
+        }
+      }
+
+      function startRaf() {
+        if (rafId !== null) return;
+        const tick = () => {
+          renderSync(player.currentTime || 0);
+          if (!player.paused && !player.ended) {
+            rafId = requestAnimationFrame(tick);
+          } else {
+            rafId = null;
+          }
+        };
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function stopRaf() {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      }
+
+      // Player Controls
+      playBtn.addEventListener("click", () => {
+        markStarted();
+        if (player.paused || player.ended) {
+          setFollowPaused(false);
+          const state = findPlaybackState(player.currentTime || 0);
+          scrollToSystem(state.sys.sysIdx, true);
+          player.play().catch(() => {});
+        } else {
+          player.pause();
+        }
+      });
+
+      document.getElementById("seek-back").addEventListener("click", () => {
+        seekToTime((player.currentTime || 0) - 5, true);
+      });
+
+      document.getElementById("seek-fwd").addEventListener("click", () => {
+        seekToTime((player.currentTime || 0) + 5, true);
+      });
+
+      speedBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        togglePopover(speedPopover, speedBtn);
+      });
+
+      speedSlider.addEventListener("input", () => {
+        setSpeed(Number(speedSlider.value));
+      });
+
+      speedPresetBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setSpeed(Number(btn.dataset.rate));
+        });
+      });
+
+      speedResetBtn.addEventListener("click", () => {
+        setSpeed(1);
+      });
+
+      locatePill.addEventListener("click", () => {
+        setFollowPaused(false);
+        const state = findPlaybackState(player.currentTime || 0);
+        scrollToSystem(state.sys.sysIdx, true);
+      });
+
+      // Scrubber Pointer Events
+      function scrubFraction(clientX) {
+        const rect = scrubber.getBoundingClientRect();
+        if (rect.width <= 0) return 0;
+        return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      }
+
+      function showScrubTip(frac) {
+        const dur = getDuration();
+        const t = frac * dur;
+        const st = activeManifest ? findPlaybackState(t) : null;
+        scrubTip.textContent = (st ? "M" + st.bar.bar + " · " : "") + fmtTime(t);
+        scrubTip.style.left = (frac * 100).toFixed(2) + "%";
+        scrubTip.classList.add("visible");
+      }
+
+      scrubber.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        scrubber.setPointerCapture(e.pointerId);
+        draggingScrub = true;
+        scrubber.classList.add("dragging");
+        const frac = scrubFraction(e.clientX);
+        scrubFill.style.width = (frac * 100).toFixed(3) + "%";
+        scrubThumb.style.left = (frac * 100).toFixed(3) + "%";
+        showScrubTip(frac);
+      });
+
+      scrubber.addEventListener("pointermove", (e) => {
+        const frac = scrubFraction(e.clientX);
+        showScrubTip(frac);
+        if (draggingScrub) {
+          scrubFill.style.width = (frac * 100).toFixed(3) + "%";
+          scrubThumb.style.left = (frac * 100).toFixed(3) + "%";
+        }
+      });
+
+      scrubber.addEventListener("pointerup", (e) => {
+        if (!draggingScrub) return;
+        draggingScrub = false;
+        scrubber.classList.remove("dragging");
+        scrubTip.classList.remove("visible");
+        const frac = scrubFraction(e.clientX);
+        seekToTime(frac * getDuration(), true);
+      });
+
+      scrubber.addEventListener("pointerleave", () => {
+        if (!draggingScrub) scrubTip.classList.remove("visible");
+      });
+
+      scrubber.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          seekToTime((player.currentTime || 0) - 5, true);
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          seekToTime((player.currentTime || 0) + 5, true);
+        }
+      });
+
+      // Audio Events
+      player.addEventListener("play", () => {
+        markStarted();
+        updatePlayIcon();
+        locatePill.classList.toggle("visible", followPaused);
+        startRaf();
+      });
+      player.addEventListener("playing", () => {
+        updatePlayIcon();
+        startRaf();
+      });
+      player.addEventListener("pause", () => {
+        stopRaf();
+        updatePlayIcon();
+        locatePill.classList.remove("visible");
+        renderSync(player.currentTime || 0);
+      });
+      player.addEventListener("ended", () => {
+        stopRaf();
+        updatePlayIcon();
+        locatePill.classList.remove("visible");
+        renderSync(player.currentTime || 0);
+      });
+      player.addEventListener("loadedmetadata", () => {
+        if (activeManifest) {
+          renderManifest(activeManifest, activePageUrls);
+        }
+      });
+      player.addEventListener("timeupdate", () => {
+        if (rafId === null) renderSync(player.currentTime || 0);
+      });
+
+      // Detect Manual Scrolling While Playing
+      function onUserScrollIntent() {
+        if (!player.paused && !player.ended && performance.now() > programmaticScrollUntil) {
+          setFollowPaused(true);
+        }
+      }
+
+      window.addEventListener("wheel", onUserScrollIntent, { passive: true });
+      window.addEventListener("touchmove", onUserScrollIntent, { passive: true });
+      window.addEventListener("scroll", onUserScrollIntent, { passive: true });
+
+      // Popovers & Modals
+      moreBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        togglePopover(moreMenu, moreBtn);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!moreMenu.contains(e.target) && e.target !== moreBtn && !speedPopover.contains(e.target) && e.target !== speedBtn) {
+          closePopovers();
+        }
+      });
+
+      function openImportModal() {
+        closePopovers();
+        importModal.classList.add("open");
+      }
+
+      function closeImportModal() {
+        importModal.classList.remove("open");
+      }
+
+      importBtn.addEventListener("click", openImportModal);
+      document.getElementById("close-import-btn").addEventListener("click", closeImportModal);
+      document.getElementById("import-cancel-btn").addEventListener("click", closeImportModal);
+      importModal.addEventListener("click", (e) => {
+        if (e.target === importModal) closeImportModal();
+      });
+
+      document.getElementById("pick-dir-btn").addEventListener("click", () => {
+        dirInput.value = "";
+        dirInput.click();
+      });
+
+      document.getElementById("pick-files-btn").addEventListener("click", () => {
+        filesInput.value = "";
+        filesInput.click();
+      });
+
+      dirInput.addEventListener("change", () => {
+        if (dirInput.files && dirInput.files.length) {
+          inspectAndValidateFiles(Array.from(dirInput.files));
+        }
+      });
+
+      filesInput.addEventListener("change", () => {
+        if (filesInput.files && filesInput.files.length) {
+          inspectAndValidateFiles(Array.from(filesInput.files));
+        }
+      });
+
+      openPdfBtn.addEventListener("click", () => {
+        closePopovers();
+        const src = pdfIframe.dataset.src;
+        if (!src) return;
+        if (pdfIframe.getAttribute("src") !== src) {
+          pdfIframe.setAttribute("src", src);
+        }
+        pdfModal.classList.add("open");
+      });
+
+      document.getElementById("close-pdf-btn").addEventListener("click", () => {
+        pdfModal.classList.remove("open");
+      });
+      pdfModal.addEventListener("click", (e) => {
+        if (e.target === pdfModal) pdfModal.classList.remove("open");
+      });
+
+      function openCalibrationModal() {
+        if (!activeDetection || !activeManifest) return;
+        closePopovers();
+        calBpmInput.value = activeDetection.lastParams.bpm;
+        calLeadInInput.value = activeDetection.lastParams.leadIn;
+        calPickupInput.checked = activeDetection.lastParams.pickup;
+        calModal.classList.add("open");
+      }
+
+      menuCalibrate.addEventListener("click", openCalibrationModal);
+      document.getElementById("close-cal-btn").addEventListener("click", () => calModal.classList.remove("open"));
+      document.getElementById("cal-cancel-btn").addEventListener("click", () => calModal.classList.remove("open"));
+      calModal.addEventListener("click", (e) => {
+        if (e.target === calModal) calModal.classList.remove("open");
+      });
+
+      calForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (!activeDetection) return;
+        const bpm = Math.max(20, Math.min(260, Number(calBpmInput.value) || 72));
+        const leadIn = Math.max(0, Number(calLeadInInput.value) || 0);
+        const pickup = calPickupInput.checked;
+        activeDetection.lastParams = { bpm, leadIn, pickup, title: activeTitle };
+        const updated = buildManifestFromDetection(activeDetection, activeDetection.lastParams);
+        renderManifest(updated, activePageUrls);
+        calModal.classList.remove("open");
+        showToast("已更新同步时间轴", { duration: 2500 });
+      });
+
+      document.getElementById("menu-export-json").addEventListener("click", () => {
+        closePopovers();
+        if (activeManifest) triggerDownloadJson(activeManifest);
+      });
+
+      menuResetBuiltin.addEventListener("click", () => {
+        closePopovers();
+        loadBuiltinProject();
+        showToast("已恢复示例曲目", { duration: 2500 });
+      });
+
+      // Modal Dropzone & Global Drag & Drop
+      let dragDepth = 0;
+
+      function hasFilesTransfer(e) {
+        const types = e.dataTransfer && e.dataTransfer.types;
+        return types && Array.from(types).includes("Files");
+      }
+
+      async function extractDroppedFiles(dt) {
+        const items = dt.items ? Array.from(dt.items) : [];
+        const entries = items.map((it) => (it.webkitGetAsEntry ? it.webkitGetAsEntry() : null)).filter(Boolean);
+        if (entries.length) {
+          const collected = [];
+          for (const ent of entries) {
+            collected.push(...(await collectEntryFiles(ent, "")));
+          }
+          return collected;
+        }
+        return dt.files ? Array.from(dt.files) : [];
+      }
+
+      ["dragenter", "dragover"].forEach((ev) => {
+        modalDropzone.addEventListener(ev, (e) => {
+          if (!hasFilesTransfer(e)) return;
+          e.preventDefault();
+          e.stopPropagation();
+          modalDropzone.classList.add("dragover");
+        });
+      });
+
+      modalDropzone.addEventListener("dragleave", (e) => {
+        if (!hasFilesTransfer(e)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        modalDropzone.classList.remove("dragover");
+      });
+
+      modalDropzone.addEventListener("drop", async (e) => {
+        if (!hasFilesTransfer(e)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragDepth = 0;
+        modalDropzone.classList.remove("dragover");
+        dropOverlay.classList.remove("open");
+        const dropped = await extractDroppedFiles(e.dataTransfer);
+        if (dropped.length) await inspectAndValidateFiles(dropped);
+      });
+
+      window.addEventListener("dragenter", (e) => {
+        if (!hasFilesTransfer(e)) return;
+        e.preventDefault();
+        if (importModal.classList.contains("open")) return;
+        dragDepth++;
+        dropOverlay.classList.add("open");
+      });
+
+      window.addEventListener("dragover", (e) => {
+        if (!hasFilesTransfer(e)) return;
+        e.preventDefault();
+      });
+
+      window.addEventListener("dragleave", (e) => {
+        if (!hasFilesTransfer(e)) return;
+        if (importModal.classList.contains("open")) return;
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) dropOverlay.classList.remove("open");
+      });
+
+      window.addEventListener("drop", async (e) => {
+        if (!hasFilesTransfer(e)) return;
+        e.preventDefault();
+        dragDepth = 0;
+        dropOverlay.classList.remove("open");
+        const dropped = await extractDroppedFiles(e.dataTransfer);
+        openImportModal();
+        if (dropped.length) await inspectAndValidateFiles(dropped);
+      });
+
+      // Keyboard Shortcuts
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closePopovers();
+          closeImportModal();
+          pdfModal.classList.remove("open");
+          calModal.classList.remove("open");
+          return;
+        }
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : "";
+        const inModalOrInput =
+          ["INPUT", "TEXTAREA", "SELECT"].includes(tag) ||
+          (e.target && e.target.isContentEditable) ||
+          importModal.classList.contains("open") ||
+          pdfModal.classList.contains("open") ||
+          calModal.classList.contains("open") ||
+          moreMenu.classList.contains("open");
+
+        if (inModalOrInput) return;
+
+        if (e.code === "Space" && tag !== "BUTTON" && tag !== "A") {
+          e.preventDefault();
+          playBtn.click();
+        } else if (e.key === "ArrowLeft" && e.target !== scrubber) {
+          e.preventDefault();
+          seekToTime((player.currentTime || 0) - 5, true);
+        } else if (e.key === "ArrowRight" && e.target !== scrubber) {
+          e.preventDefault();
+          seekToTime((player.currentTime || 0) + 5, true);
+        } else if (e.key === "[") {
+          e.preventDefault();
+          setSpeed(playbackRate - 0.05);
+        } else if (e.key === "]") {
+          e.preventDefault();
+          setSpeed(playbackRate + 0.05);
+        } else if (["PageUp", "PageDown", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) {
+          onUserScrollIntent();
+        }
+      });
+
+      // =========================================================================
+      // Pure-JS Zero-Dependency ZIP Unpacker (STORE + DEFLATE)
+      // =========================================================================
+      const IGNORED_DIRS = new Set([".tools", "build", ".git", "__pycache__", "node_modules", "__MACOSX"]);
+
+      function isIgnoredPath(rel) {
+        const parts = rel.split("/");
+        return parts.some((p) => IGNORED_DIRS.has(p));
+      }
+
+      function guessMime(name) {
+        const lower = name.toLowerCase();
+        if (lower.endsWith(".mp3")) return "audio/mpeg";
+        if (lower.endsWith(".wav")) return "audio/wav";
+        if (lower.endsWith(".m4a")) return "audio/mp4";
+        if (lower.endsWith(".ogg")) return "audio/ogg";
+        if (lower.endsWith(".png")) return "image/png";
+        if (lower.endsWith(".pdf")) return "application/pdf";
+        if (lower.endsWith(".json")) return "application/json";
+        return "application/octet-stream";
+      }
+
+      async function inflateRawDeflate(compBytes) {
+        if (typeof DecompressionStream === "undefined") {
+          throw new Error("当前浏览器不支持原生 deflate-raw 解压");
+        }
+        const stream = new Blob([compBytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        const ab = await new Response(stream).arrayBuffer();
+        return new Uint8Array(ab);
+      }
+
+      async function unzipFile(zipFile) {
+        const buf = await zipFile.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        const dv = new DataView(buf);
+        if (bytes.length < 22) {
+          throw new Error("压缩包文件过小或已损坏");
+        }
+
+        const minOff = Math.max(0, bytes.length - 65557);
+        let eocdPos = -1;
+        for (let i = bytes.length - 22; i >= minOff; i--) {
+          if (dv.getUint32(i, true) === 0x06054b50) {
+            const cdSize = dv.getUint32(i + 12, true);
+            const cdOff = dv.getUint32(i + 16, true);
+            if (cdOff + cdSize <= i) {
+              eocdPos = i;
+              break;
+            }
+          }
+        }
+        if (eocdPos === -1) {
+          throw new Error("无法识别的 ZIP 文件结构");
+        }
+
+        const totalEntries = dv.getUint16(eocdPos + 10, true);
+        const cdOffset = dv.getUint32(eocdPos + 16, true);
+        if (cdOffset === 0xffffffff) {
+          throw new Error("不支持 Zip64 超大压缩包");
+        }
+
+        const decoder = new TextDecoder("utf-8");
+        const outFiles = [];
+        let p = cdOffset;
+
+        for (let idx = 0; idx < totalEntries; idx++) {
+          if (p + 46 > bytes.length || dv.getUint32(p, true) !== 0x02014b50) {
+            throw new Error("ZIP 中央目录损坏");
+          }
+          const flags = dv.getUint16(p + 8, true);
+          const method = dv.getUint16(p + 10, true);
+          const compSize = dv.getUint32(p + 20, true);
+          const nameLen = dv.getUint16(p + 28, true);
+          const extraLen = dv.getUint16(p + 30, true);
+          const commentLen = dv.getUint16(p + 32, true);
+          const localOff = dv.getUint32(p + 42, true);
+
+          const rawName = decoder.decode(bytes.subarray(p + 46, p + 46 + nameLen));
+          const cleanRel = rawName.replace(/\\/g, "/").replace(/^\/+/, "");
+          p += 46 + nameLen + extraLen + commentLen;
+
+          if (!cleanRel || cleanRel.endsWith("/")) continue;
+          const baseName = cleanRel.split("/").pop();
+          if (!baseName || baseName.startsWith(".") || isIgnoredPath(cleanRel)) continue;
+
+          if (flags & 1) {
+            throw new Error("不支持加密的 ZIP 压缩包");
+          }
+          if (localOff + 30 > bytes.length || dv.getUint32(localOff, true) !== 0x04034b50) {
+            throw new Error("ZIP 本地文件头损坏");
+          }
+          const lhNameLen = dv.getUint16(localOff + 26, true);
+          const lhExtraLen = dv.getUint16(localOff + 28, true);
+          const dataStart = localOff + 30 + lhNameLen + lhExtraLen;
+          if (dataStart + compSize > bytes.length) {
+            throw new Error("ZIP 条目数据越界损坏");
+          }
+
+          const compSlice = bytes.subarray(dataStart, dataStart + compSize);
+          let plainBytes;
+          if (method === 0) {
+            plainBytes = compSlice.slice();
+          } else if (method === 8) {
+            plainBytes = await inflateRawDeflate(compSlice);
+          } else {
+            throw new Error("不支持的 ZIP 压缩方式 (" + method + ")");
+          }
+
+          const f = new File([plainBytes], baseName, { type: guessMime(baseName) });
+          Object.defineProperty(f, "_relPath", { value: cleanRel });
+          outFiles.push(f);
+        }
+
+        return outFiles;
+      }
+
+      // =========================================================================
+      // Validation UI & Artifact Inspector
+      // =========================================================================
+      const VAL_ICONS = {
+        ok: '<svg class="ico" style="width:15px;height:15px;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+        warn: '<svg class="ico" style="width:15px;height:15px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+        err: '<svg class="ico" style="width:15px;height:15px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+        muted: '<svg class="ico" style="width:15px;height:15px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg>',
+        spin: '<span class="val-spinner"></span>'
+      };
+
+      function setValRow(key, status, text) {
+        const icoEl = document.getElementById("val-ico-" + key);
+        const txtEl = document.getElementById("val-txt-" + key);
+        icoEl.className = "val-ico " + status;
+        icoEl.innerHTML = VAL_ICONS[status === "spin" ? "spin" : status] || VAL_ICONS.muted;
+        txtEl.className = "val-detail " + (status === "spin" ? "" : status);
+        txtEl.textContent = text;
+      }
+
+      function validateManifestStructure(m, pngCount) {
+        if (!m || typeof m !== "object") return "JSON 对象无效";
+        if (!Array.isArray(m.systems) || !m.systems.length) return "缺少 systems 数组";
+        if (!Array.isArray(m.bars) || !m.bars.length) return "缺少 bars 数组";
+        for (let i = 0; i < m.systems.length; i++) {
+          const s = m.systems[i];
+          if (!Number.isInteger(s.page) || s.page < 1 || s.page > pngCount) {
+            return "第 " + (i + 1) + " 行页码超出 PNG 页数";
+          }
+          if (!Array.isArray(s.sliceY) || s.sliceY.length < 2 || s.sliceY[0] >= s.sliceY[1]) {
+            return "第 " + (i + 1) + " 行 sliceY 坐标无效";
+          }
+          if (!Array.isArray(s.staffY) || s.staffY.length < 2 || s.staffY[0] >= s.staffY[1]) {
+            return "第 " + (i + 1) + " 行 staffY 坐标无效";
+          }
+        }
+        for (let i = 0; i < m.bars.length; i++) {
+          const b = m.bars[i];
+          if (!(Number.isFinite(b.start) && Number.isFinite(b.end) && b.start < b.end)) {
+            return "小节 M" + b.bar + " 起止时间无效";
+          }
+          if (i > 0 && b.start < m.bars[i - 1].start - 1e-4) {
+            return "小节时间戳非单调递增";
+          }
+        }
+        return null;
+      }
+
+      function probeImageDimensions(imgFile) {
+        return new Promise((resolve, reject) => {
+          const u = URL.createObjectURL(imgFile);
+          const img = new Image();
+          img.onload = () => {
+            const dims = { w: img.naturalWidth, h: img.naturalHeight };
+            URL.revokeObjectURL(u);
+            resolve(dims);
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(u);
+            reject(new Error("图片损坏：" + imgFile.name));
+          };
+          img.src = u;
+        });
+      }
+
+      async function inspectAndValidateFiles(rawFiles) {
+        valPanel.classList.remove("hidden");
+        stagedReady = null;
+        importStartBtn.disabled = true;
+
+        setValRow("source", "spin", "检查来源…");
+        setValRow("audio", "muted", "等待检查");
+        setValRow("pages", "muted", "等待检查");
+        setValRow("manifest", "muted", "等待检查");
+        setValRow("pdf", "muted", "等待检查");
+
+        let files = [];
+        const zipFiles = rawFiles.filter((f) => /\.zip$/i.test(f.name) && !f.name.startsWith("."));
+
+        if (zipFiles.length) {
+          const zipFile = zipFiles[0];
+          try {
+            const unpacked = await unzipFile(zipFile);
+            files = unpacked;
+            setValRow("source", "ok", zipFile.name + " · " + unpacked.length + " 个文件");
+          } catch (err) {
+            setValRow("source", "err", err && err.message ? err.message : "ZIP 解包失败");
+            setValRow("audio", "err", "未解析");
+            setValRow("pages", "err", "未解析");
+            setValRow("manifest", "err", "未解析");
+            setValRow("pdf", "muted", "未包含（可选）");
+            return;
+          }
+        } else {
+          files = rawFiles.filter((f) => !isIgnoredPath(fileRel(f)) && !f.name.startsWith("."));
+          setValRow("source", "ok", "已选 " + files.length + " 个本地文件");
+        }
+
+        // Locate artifacts
+        const audioFiles = files.filter((f) => /\.(mp3|wav|m4a|ogg|flac)$/i.test(f.name));
+        audioFiles.sort((a, b) => {
+          const am = a.name.toLowerCase().endsWith(".mp3") ? 0 : 1;
+          const bm = b.name.toLowerCase().endsWith(".mp3") ? 0 : 1;
+          return am - bm || b.size - a.size;
+        });
+        const audioFile = audioFiles[0] || null;
+
+        let pngFiles = files
+          .filter((f) => /^page[-_]?\d+\.png$/i.test(f.name))
+          .sort((a, b) => parsePageNum(a.name) - parsePageNum(b.name) || a.name.localeCompare(b.name));
+        if (!pngFiles.length) {
+          pngFiles = files
+            .filter((f) => /\.png$/i.test(f.name) && /(^|\/)previews\//i.test(fileRel(f)))
+            .sort((a, b) => parsePageNum(a.name) - parsePageNum(b.name) || a.name.localeCompare(b.name));
+        }
+
+        const manifestFile = files.find((f) => f.name === "sync_manifest.json") || null;
+        const scoreDataFile = files.find((f) => f.name === "score_data.py") || null;
+        const buildPdfFile = files.find((f) => f.name === "build_pdf.py") || null;
+        const pdfFile = files.find((f) => /\.pdf$/i.test(f.name)) || null;
+
+        // PDF (optional)
+        if (pdfFile) {
+          setValRow("pdf", "ok", pdfFile.name);
+        } else {
+          setValRow("pdf", "muted", "未包含（可选）");
+        }
+
+        // Validate Audio
+        let duration = 0;
+        let audioOk = false;
+        if (!audioFile) {
+          setValRow("audio", "err", "缺少音频文件（*.mp3）");
+        } else {
+          setValRow("audio", "spin", "校验音频解码…");
+          duration = await probeAudioFileDuration(audioFile);
+          if (duration > 0) {
+            audioOk = true;
+            setValRow("audio", "ok", audioFile.name + " · " + fmtTime(duration));
+          } else {
+            setValRow("audio", "err", "音频无法解码：" + audioFile.name);
+          }
+        }
+
+        // Validate Preview PNGs
+        let pagesOk = false;
+        let firstDims = null;
+        if (!pngFiles.length) {
+          setValRow("pages", "err", "缺少预览图（previews/page-*.png）");
+        } else {
+          setValRow("pages", "spin", "校验 " + pngFiles.length + " 页图像…");
+          try {
+            for (let i = 0; i < pngFiles.length; i++) {
+              const d = await probeImageDimensions(pngFiles[i]);
+              if (i === 0) firstDims = d;
+            }
+            pagesOk = true;
+            setValRow(
+              "pages",
+              "ok",
+              pngFiles.length + " 页 · " + firstDims.w + "×" + firstDims.h
+            );
+          } catch (err) {
+            setValRow("pages", "err", err && err.message ? err.message : "PNG 图像损坏");
+          }
+        }
+
+        if (!audioOk || !pagesOk) {
+          setValRow("manifest", "err", "请先补全音频与预览 PNG");
+          return;
+        }
+
+        const audioBaseTitle = audioFile.name.replace(/\.[^.]+$/, "");
+
+        // Validate sync_manifest.json or Auto-Detect
+        if (manifestFile) {
+          setValRow("manifest", "spin", "校验 JSON 清单…");
+          try {
+            const parsedManifest = JSON.parse(await manifestFile.text());
+            const errMsg = validateManifestStructure(parsedManifest, pngFiles.length);
+            if (errMsg) {
+              setValRow("manifest", "err", errMsg);
+              return;
+            }
+            setValRow(
+              "manifest",
+              "ok",
+              "校验通过 · " + parsedManifest.systems.length + " 行 / " + parsedManifest.bars.length + " 小节"
+            );
+            stagedReady = {
+              mode: "manifest",
+              manifest: parsedManifest,
+              detection: null,
+              audioFile,
+              pngFiles,
+              pdfFile,
+              title: parsedManifest.title || audioBaseTitle
+            };
+            importStartBtn.disabled = false;
+          } catch (err) {
+            setValRow("manifest", "err", "JSON 格式错误");
+          }
+          return;
+        }
+
+        setValRow("manifest", "spin", "未含清单，自动识谱中…");
+        try {
+          const scoreMeta = scoreDataFile ? parseScoreDataPy(await scoreDataFile.text()) : null;
+          const phraseCues = buildPdfFile ? parsePhraseCuesPy(await buildPdfFile.text()) : {};
+
+          const pageLayouts = [];
+          for (let i = 0; i < pngFiles.length; i++) {
+            pageLayouts.push(await detectPageLayoutCanvas(pngFiles[i], i + 1));
+          }
+
+          const nBars = pageLayouts.reduce(
+            (acc, pg) => acc + pg.sysEntries.reduce((s, sys) => s + sys.barBoxes.length, 0),
+            0
+          );
+          const nSys = pageLayouts.reduce((acc, pg) => acc + pg.sysEntries.length, 0);
+
+          let bpm;
+          let leadIn;
+          let pickup;
+          let title;
+
+          if (scoreMeta) {
+            bpm = scoreMeta.bpm || 72;
+            pickup = Boolean(scoreMeta.parsedBars[0] && scoreMeta.parsedBars[0].isPickup);
+            leadIn = Number((0.25 * 60 / bpm).toFixed(4));
+            title = scoreMeta.title || audioBaseTitle;
+          } else {
+            leadIn = 0;
+            pickup = false;
+            bpm = Math.round(((240 * nBars) / Math.max(1, duration - leadIn)) * 10) / 10;
+            title = audioBaseTitle;
+          }
+
+          const detection = {
+            audioName: audioFile.name,
+            pdfName: pdfFile ? pdfFile.name : "",
+            pageNames: pngFiles.map((f) => f.name),
+            duration,
+            pageLayouts,
+            scoreMeta,
+            phraseCues,
+            lastParams: { bpm, leadIn, pickup, title }
+          };
+          const manifest = buildManifestFromDetection(detection, detection.lastParams);
+
+          setValRow(
+            "manifest",
+            "warn",
+            "未含清单，已自动识谱（" + nSys + " 行 / " + nBars + " 小节，导入后可校准）"
+          );
+          stagedReady = {
+            mode: "detected",
+            manifest,
+            detection,
+            audioFile,
+            pngFiles,
+            pdfFile,
+            title: manifest.title
+          };
+          importStartBtn.disabled = false;
+        } catch (err) {
+          setValRow("manifest", "err", err && err.message ? err.message : "自动识谱失败");
+        }
+      }
+
+      importStartBtn.addEventListener("click", () => {
+        if (!stagedReady) return;
+        const { mode, manifest, detection, audioFile, pngFiles, pdfFile, title } = stagedReady;
+
+        const ownedUrls = [];
+        const audioUrl = URL.createObjectURL(audioFile);
+        ownedUrls.push(audioUrl);
+
+        const pngByName = new Map(pngFiles.map((f) => [f.name, f]));
+        const orderedPageUrls = (manifest.pages && manifest.pages.length === pngFiles.length)
+          ? manifest.pages.map((rel, i) => {
+              const fname = rel.split("/").pop();
+              const f = pngByName.get(fname) || pngFiles[i];
+              const u = URL.createObjectURL(f);
+              ownedUrls.push(u);
+              return u;
+            })
+          : pngFiles.map((f) => {
+              const u = URL.createObjectURL(f);
+              ownedUrls.push(u);
+              return u;
+            });
+
+        let pdfUrl = "";
+        if (pdfFile) {
+          pdfUrl = URL.createObjectURL(pdfFile);
+          ownedUrls.push(pdfUrl);
+        }
+
+        revokeImportedUrls();
+        activeObjectUrls = ownedUrls;
+        activeDetection = detection;
+        isImported = true;
+        hasStarted = false;
+        followPaused = false;
+        sheetPaper.classList.remove("started");
+
+        setMedia(audioUrl, pdfUrl, pdfFile ? pdfFile.name : "");
+        renderManifest(manifest, orderedPageUrls);
+        closeImportModal();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        if (mode === "detected") {
+          showToast("已载入「" + title + "」", {
+            duration: 4500,
+            actionLabel: "校准",
+            onAction: openCalibrationModal
+          });
+        } else {
+          showToast("已载入「" + title + "」", { duration: 3000 });
+        }
+      });
+
+      // =========================================================================
+      // File Tree & Canvas Detection Helpers
+      // =========================================================================
+      async function collectEntryFiles(entry, relPrefix) {
+        if (entry.isFile) {
+          const file = await new Promise((resolve, reject) => entry.file(resolve, reject));
+          Object.defineProperty(file, "_relPath", { value: relPrefix + entry.name });
+          return [file];
+        }
+        if (entry.isDirectory) {
+          if (IGNORED_DIRS.has(entry.name)) return [];
+          const reader = entry.createReader();
+          const allEntries = [];
+          while (true) {
+            const batch = await new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+            if (!batch.length) break;
+            allEntries.push(...batch);
+          }
+          const nested = [];
+          for (const child of allEntries) {
+            nested.push(...(await collectEntryFiles(child, relPrefix + entry.name + "/")));
+          }
+          return nested;
+        }
+        return [];
+      }
+
+      function fileRel(f) {
+        return f._relPath || f.webkitRelativePath || f.name;
+      }
+
+      function parsePageNum(name) {
+        const m = name.match(/(\d+)/);
+        return m ? parseInt(m[1], 10) : 0;
+      }
+
+      function parseScoreDataPy(pyText) {
+        const strVal = (k) => {
+          const m = pyText.match(new RegExp("^" + k + "\\s*=\\s*[\"']([^\"']+)[\"']", "m"));
+          return m ? m[1] : "";
+        };
+        const numVal = (k) => {
+          const m = pyText.match(new RegExp("^" + k + "\\s*=\\s*([0-9.]+)", "m"));
+          return m ? Number(m[1]) : null;
+        };
+
+        const title = strVal("TITLE");
+        const subtitle = strVal("SUBTITLE");
+        const composer = strVal("COMPOSER");
+        const arrangerInfo = strVal("ARRANGER_INFO");
+        const bpm = numVal("TEMPO_BPM");
+        const capo = numVal("CAPO");
+
+        const barChunks = pyText.split(/m\.append\(\s*Measure\(/).slice(1);
+        const parsedBars = {};
+        for (const chunk of barChunks) {
+          const bm = chunk.match(/\bbar\s*=\s*(\d+)/);
+          if (!bm) continue;
+          const b = parseInt(bm[1], 10);
+          const isPickup = /\bis_pickup\s*=\s*True\b/.test(chunk);
+          const secM = chunk.match(/\bsection\s*=\s*["']([^"']+)["']/);
+          const chM = chunk.match(/\bchords\s*=\s*\[([^\]]*)\]/);
+          let chords = "";
+          if (chM) {
+            const labels = [];
+            const itemRe = /["']([^"']+)["']/g;
+            let im;
+            while ((im = itemRe.exec(chM[1])) !== null) labels.push(im[1]);
+            chords = labels.join(" → ");
+          }
+          parsedBars[b] = { isPickup, section: secM ? secM[1] : "", chords };
+        }
+
+        return { title, subtitle, composer, arrangerInfo, bpm, capo, parsedBars };
+      }
+
+      function parsePhraseCuesPy(pyText) {
+        const cues = {};
+        const block = pyText.match(/PHRASE_CUES[^=]*=\s*\{([\s\S]*?)\}/);
+        if (!block) return cues;
+        const rowRe = /\(\s*(\d+)\s*,\s*\d+\s*\)\s*:\s*["']([^"']+)["']/g;
+        let m;
+        while ((m = rowRe.exec(block[1])) !== null) {
+          cues[parseInt(m[1], 10)] = m[2];
+        }
+        return cues;
+      }
+
+      function probeAudioFileDuration(audioFile) {
+        return new Promise((resolve) => {
+          const url = URL.createObjectURL(audioFile);
+          const tmp = document.createElement("audio");
+          tmp.preload = "metadata";
+          tmp.onloadedmetadata = () => {
+            const dur = Number.isFinite(tmp.duration) ? tmp.duration : 0;
+            URL.revokeObjectURL(url);
+            resolve(dur);
+          };
+          tmp.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(0);
+          };
+          tmp.src = url;
+        });
+      }
+
+      function whiteGapMidJS(rowHasInk, yLo, yHi, h) {
+        const lo = Math.max(0, yLo);
+        const hi = Math.min(h - 1, yHi);
+        if (lo > hi) return Math.max(0, Math.min(h - 1, (yLo + yHi) >> 1));
+        let best = null;
+        let cur = null;
+        for (let y = lo; y <= hi; y++) {
+          if (!rowHasInk[y]) {
+            if (!cur) cur = [y, y];
+            else cur[1] = y;
+          } else if (cur) {
+            if (!best || cur[1] - cur[0] > best[1] - best[0]) best = cur;
+            cur = null;
+          }
+        }
+        if (cur && (!best || cur[1] - cur[0] > best[1] - best[0])) best = cur;
+        return best ? ((best[0] + best[1]) >> 1) : ((lo + hi) >> 1);
+      }
+
+      async function detectPageLayoutCanvas(pngFile, pageNum) {
+        const url = URL.createObjectURL(pngFile);
+        try {
+          const img = await new Promise((resolve, reject) => {
+            const el = new Image();
+            el.onload = () => resolve(el);
+            el.onerror = reject;
+            el.src = url;
+          });
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0);
+
+          const rgba = ctx.getImageData(0, 0, w, h).data;
+          const gray = new Uint8Array(w * h);
+          for (let i = 0, p = 0; i < gray.length; i++, p += 4) {
+            gray[i] = (rgba[p] * 77 + rgba[p + 1] * 150 + rgba[p + 2] * 29) >> 8;
+          }
+
+          const x0 = Math.floor(w * 0.05);
+          const x1 = Math.floor(w * 0.95);
+          const darkThreshold = (x1 - x0) * 0.65;
+
+          const darkRows = [];
+          const rowHasInk = new Uint8Array(h);
+          for (let y = 0; y < h; y++) {
+            const off = y * w;
+            let d = 0;
+            let anyInk = 0;
+            for (let x = 0; x < w; x++) {
+              const v = gray[off + x];
+              if (v < 235) anyInk = 1;
+              if (x >= x0 && x < x1 && v < 190) d++;
+            }
+            rowHasInk[y] = anyInk;
+            if (d > darkThreshold) darkRows.push(y);
+          }
+
+          const lines = [];
+          for (const y of darkRows) {
+            if (!lines.length || y > lines[lines.length - 1][lines[lines.length - 1].length - 1] + 2) {
+              lines.push([y]);
+            } else {
+              lines[lines.length - 1].push(y);
+            }
+          }
+          const lineYs = lines.map((g) => g.reduce((a, b) => a + b, 0) / g.length);
+
+          const grouped = [];
+          for (const ly of lineYs) {
+            if (!grouped.length || ly - grouped[grouped.length - 1][grouped[grouped.length - 1].length - 1] > 35) {
+              grouped.push([ly]);
+            } else {
+              grouped[grouped.length - 1].push(ly);
+            }
+          }
+          const staves = grouped.filter((s) => s.length === 6);
+          if (!staves.length) {
+            throw new Error("第 " + pageNum + " 页未能检测到 6 线吉他谱表");
+          }
+
+          const firstStaff = Math.round(staves[0][0]);
+          let topCut;
+          let headerSlice = null;
+          if (pageNum === 1) {
+            topCut = whiteGapMidJS(rowHasInk, Math.max(0, firstStaff - 170), Math.max(0, firstStaff - 60), h);
+            let hMin = -1;
+            let hMax = -1;
+            for (let y = 0; y <= topCut; y++) {
+              if (rowHasInk[y]) {
+                if (hMin === -1) hMin = y;
+                hMax = y;
+              }
+            }
+            if (hMin !== -1) {
+              headerSlice = [Math.max(0, hMin - 16), Math.min(topCut, hMax + 16)];
+            }
+          } else {
+            topCut = whiteGapMidJS(rowHasInk, 90, 125, h);
+          }
+
+          const cuts = [topCut];
+          for (let i = 0; i < staves.length - 1; i++) {
+            const prevBot = Math.round(staves[i][5]);
+            const nextTop = Math.round(staves[i + 1][0]);
+            const safeLo = prevBot + 40;
+            const safeHi = nextTop - 78;
+            let hasSafeWhite = false;
+            for (let y = safeLo; y <= safeHi; y++) {
+              if (y >= 0 && y < h && !rowHasInk[y]) {
+                hasSafeWhite = true;
+                break;
+              }
+            }
+            if (safeLo <= safeHi && hasSafeWhite) {
+              cuts.push(whiteGapMidJS(rowHasInk, safeLo, safeHi, h));
+            } else {
+              cuts.push(whiteGapMidJS(rowHasInk, prevBot + 20, nextTop - 20, h));
+            }
+          }
+          const lastBot = Math.round(staves[staves.length - 1][5]);
+          cuts.push(whiteGapMidJS(rowHasInk, lastBot + 40, Math.min(h - 1, lastBot + 160), h));
+
+          const sysEntries = [];
+          for (let si = 0; si < staves.length; si++) {
+            const sysLines = staves[si];
+            const yTop = Math.round(sysLines[0]);
+            const yBot = Math.round(sysLines[5]);
+            const c0 = cuts[si];
+            const c1 = cuts[si + 1];
+
+            let ink0 = -1;
+            let ink1 = -1;
+            for (let y = c0; y <= c1; y++) {
+              if (rowHasInk[y]) {
+                if (ink0 === -1) ink0 = y;
+                ink1 = y;
+              }
+            }
+            if (ink0 === -1) {
+              ink0 = yTop - 40;
+              ink1 = yBot + 40;
+            }
+            const sliceY = [Math.max(c0, ink0 - 14), Math.min(c1, ink1 + 16)];
+
+            const gapYs = [];
+            for (let k = 0; k < 5; k++) {
+              const g0 = Math.round(sysLines[k]) + 3;
+              const g1 = Math.round(sysLines[k + 1]) - 3;
+              for (let gy = g0; gy <= g1; gy++) gapYs.push(gy);
+            }
+
+            let sx0 = w;
+            let sx1 = 0;
+            for (let x = 0; x < w; x++) {
+              if (gray[yTop * w + x] < 190) {
+                if (x < sx0) sx0 = x;
+                if (x > sx1) sx1 = x;
+              }
+            }
+            const span = Math.max(1, yBot - yTop + 1);
+            const barCols = [];
+            for (let x = sx0; x <= sx1; x++) {
+              let inside = 0;
+              for (let y = yTop; y <= yBot; y++) {
+                if (gray[y * w + x] < 140) inside++;
+              }
+              let below = 0;
+              for (let y = yBot + 3; y < Math.min(h, yBot + 15); y++) {
+                if (gray[y * w + x] < 140) below++;
+              }
+              if (inside >= span * 0.95 && below === 0) {
+                if (x > sx1 - 20 || x < sx0 + 10) {
+                  barCols.push(x);
+                } else {
+                  let sideDark = 0;
+                  for (const gy of gapYs) {
+                    if (gray[gy * w + x - 3] < 160 || gray[gy * w + x + 3] < 160) sideDark++;
+                  }
+                  if (sideDark <= gapYs.length * 0.15) barCols.push(x);
+                }
+              }
+            }
+
+            const clusters = [];
+            for (const x of barCols) {
+              if (!clusters.length || x > clusters[clusters.length - 1][clusters[clusters.length - 1].length - 1] + 15) {
+                clusters.push([x]);
+              } else {
+                clusters[clusters.length - 1].push(x);
+              }
+            }
+            const barXs = clusters.map((g) => Math.round((g.reduce((a, b) => a + b, 0) / g.length) * 10) / 10);
+            const startX = pageNum === 1 && si === 0 ? Math.round(w * 0.122) : Math.round(w * 0.093);
+            const boundaries = [startX, ...barXs.slice(1)];
+            const barBoxes = [];
+            for (let i = 0; i < boundaries.length - 1; i++) {
+              barBoxes.push([boundaries[i], boundaries[i + 1]]);
+            }
+            if (!barBoxes.length) {
+              barBoxes.push([startX, sx1]);
+            }
+
+            sysEntries.push({
+              page: pageNum,
+              width: w,
+              height: h,
+              sliceY,
+              inkY: [ink0, ink1],
+              staffY: [yTop, yBot],
+              barBoxes
+            });
+          }
+
+          return { width: w, height: h, headerSlice, sysEntries };
+        } finally {
+          URL.revokeObjectURL(url);
+        }
+      }
+
+      function buildManifestFromDetection(detection, opts) {
+        const bpm = Math.max(20, Math.min(260, Number(opts.bpm) || 72));
+        const leadIn = Math.max(0, Number(opts.leadIn) || 0);
+        const firstIsPickup = Boolean(opts.pickup);
+        const duration = detection.duration || 120;
+        const scoreMeta = detection.scoreMeta;
+        const phraseCues = detection.phraseCues || {};
+        const parsedBars = scoreMeta ? scoreMeta.parsedBars : {};
+
+        const hasZeroBar = Boolean(parsedBars[0]);
+        const barOffset = (hasZeroBar || firstIsPickup) ? 0 : 1;
+        const barDur = (4.0 * 60.0) / bpm;
+        const beatDur = 60.0 / bpm;
+
+        const systemsOut = [];
+        const barsOut = [];
+        const sectionsOut = [];
+        let curSec = "Intro";
+        let curTime = leadIn;
+        let sysCounter = 0;
+        let barIdx = 0;
+
+        let headerInfo = null;
+        if (detection.pageLayouts[0] && detection.pageLayouts[0].headerSlice) {
+          const p1 = detection.pageLayouts[0];
+          headerInfo = {
+            page: 1,
+            width: p1.width,
+            height: p1.height,
+            sliceY: p1.headerSlice
+          };
+        }
+
+        const totalDetectedBars = detection.pageLayouts.reduce(
+          (acc, pg) => acc + pg.sysEntries.reduce((s, sys) => s + sys.barBoxes.length, 0),
+          0
+        );
+
+        detection.pageLayouts.forEach((pg, pgIdx) => {
+          const pageNum = pgIdx + 1;
+          pg.sysEntries.forEach((rawSys) => {
+            const sysBars = [];
+            rawSys.barBoxes.forEach(([x0, x1]) => {
+              const barNum = barIdx + barOffset;
+              const pInfo = parsedBars[barNum] || {};
+              if (pInfo.section) {
+                curSec = pInfo.section;
+                sectionsOut.push({ name: curSec, bar: barNum, start: Number(curTime.toFixed(4)) });
+              } else if (barIdx === 0) {
+                sectionsOut.push({ name: curSec, bar: barNum, start: Number(curTime.toFixed(4)) });
+              }
+
+              const isFirstPickup = barIdx === 0 && firstIsPickup;
+              const isLast = barIdx === totalDetectedBars - 1;
+              const dur = isFirstPickup ? beatDur : barDur;
+              const endT = isLast ? Math.max(curTime + 0.5, duration) : curTime + dur;
+
+              const rec = {
+                bar: barNum,
+                sysIdx: sysCounter,
+                page: pageNum,
+                x0,
+                x1,
+                start: Number(curTime.toFixed(4)),
+                end: Number(endT.toFixed(4)),
+                sec: curSec,
+                chords: pInfo.chords || "",
+                cue: phraseCues[barNum] || ""
+              };
+              sysBars.push(rec);
+              barsOut.push(rec);
+              curTime = endT;
+              barIdx++;
+            });
+
+            systemsOut.push({
+              sysIdx: sysCounter,
+              page: pageNum,
+              width: rawSys.width,
+              height: rawSys.height,
+              sliceY: rawSys.sliceY,
+              inkY: rawSys.inkY,
+              staffY: rawSys.staffY,
+              x0: sysBars[0].x0,
+              x1: sysBars[sysBars.length - 1].x1,
+              bars: sysBars
+            });
+            sysCounter++;
+          });
+        });
+
+        return {
+          version: 1,
+          title: opts.title || (scoreMeta && scoreMeta.title) || "导入曲目",
+          subtitle: (scoreMeta && scoreMeta.subtitle) || "",
+          composer: (scoreMeta && scoreMeta.composer) || "",
+          arrangerInfo: (scoreMeta && scoreMeta.arrangerInfo) || "",
+          bpm,
+          capo: scoreMeta && scoreMeta.capo !== null ? scoreMeta.capo : undefined,
+          duration: Number(duration.toFixed(4)),
+          audio: detection.audioName,
+          pdf: detection.pdfName || "",
+          pages: detection.pageNames.map((n) => "previews/" + n),
+          header: headerInfo,
+          sections: sectionsOut,
+          systems: systemsOut,
+          bars: barsOut
+        };
+      }
+
+      function triggerDownloadJson(manifestObj) {
+        const blob = new Blob([JSON.stringify(manifestObj, null, 2) + "\n"], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "sync_manifest.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function loadBuiltinProject() {
+        revokeImportedUrls();
+        activeDetection = null;
+        isImported = false;
+        hasStarted = false;
+        followPaused = false;
+        sheetPaper.classList.remove("started");
+
+        const pageUrls = BUILTIN_MANIFEST.pages.map(
+          (p) => "./demo/call-of-silence/" + p.split("/").map(encodeURIComponent).join("/")
+        );
+        const audioUrl = "./demo/call-of-silence/" + encodeURIComponent(BUILTIN_MANIFEST.audio);
+        const pdfUrl = "./demo/call-of-silence/" + encodeURIComponent(BUILTIN_MANIFEST.pdf);
+
+        setMedia(audioUrl, pdfUrl, BUILTIN_MANIFEST.pdf);
+        renderManifest(BUILTIN_MANIFEST, pageUrls);
+      }
+
+      setSpeed(1);
+      loadBuiltinProject();
+    })();
+  </script>
+</body>
+</html>

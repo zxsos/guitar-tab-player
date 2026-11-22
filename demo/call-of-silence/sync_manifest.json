@@ -1,0 +1,1445 @@
+{
+  "version": 1,
+  "title": "Call of Silence",
+  "subtitle": "《进击的巨人》第二季插曲 · 指弹吉他独奏六线谱（技巧编配版）",
+  "composer": "泽野弘之 (Hiroyuki Sawano)",
+  "arrangerInfo": "原调：1 = A / F#m  |  选调：G调指法 (Capo = 2品)  |  标准调弦：6E 5A 4D 3G 2B 1E",
+  "bpm": 72,
+  "capo": 2,
+  "duration": 151.8,
+  "audio": "Call_of_Silence_指弹吉他试听.mp3",
+  "pdf": "Call_of_Silence_指弹吉他六线谱.pdf",
+  "pages": [
+    "previews/page-1.png",
+    "previews/page-2.png",
+    "previews/page-3.png"
+  ],
+  "header": {
+    "page": 1,
+    "width": 1241,
+    "height": 1754,
+    "sliceY": [
+      71,
+      372
+    ]
+  },
+  "sections": [
+    {
+      "name": "Intro",
+      "bar": 0,
+      "start": 0.2083
+    },
+    {
+      "name": "Verse",
+      "bar": 10,
+      "start": 31.0417
+    },
+    {
+      "name": "Interlude",
+      "bar": 18,
+      "start": 57.7083
+    },
+    {
+      "name": "Chorus I",
+      "bar": 28,
+      "start": 91.0417
+    },
+    {
+      "name": "Chorus II & Outro",
+      "bar": 36,
+      "start": 117.7083
+    }
+  ],
+  "systems": [
+    {
+      "sysIdx": 0,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        374,
+        631
+      ],
+      "inkY": [
+        388,
+        621
+      ],
+      "staffY": [
+        498,
+        578
+      ],
+      "x0": 152.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 0,
+          "start": 0.2083,
+          "end": 1.0417,
+          "sec": "Intro",
+          "chords": "弱起 Pick-up",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 152.0,
+          "x1": 213.5
+        },
+        {
+          "bar": 1,
+          "start": 1.0417,
+          "end": 4.375,
+          "sec": "Intro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 213.5,
+          "x1": 459.5
+        },
+        {
+          "bar": 2,
+          "start": 4.375,
+          "end": 7.7083,
+          "sec": "Intro",
+          "chords": "Em9 → Bm7",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 459.5,
+          "x1": 718.5
+        },
+        {
+          "bar": 3,
+          "start": 7.7083,
+          "end": 11.0417,
+          "sec": "Intro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 718.5,
+          "x1": 944.5
+        },
+        {
+          "bar": 4,
+          "start": 11.0417,
+          "end": 14.375,
+          "sec": "Intro",
+          "chords": "Em",
+          "cue": "",
+          "sysIdx": 0,
+          "page": 1,
+          "x0": 944.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 1,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        631,
+        864
+      ],
+      "inkY": [
+        642,
+        852
+      ],
+      "staffY": [
+        729,
+        809
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 5,
+          "start": 14.375,
+          "end": 17.7083,
+          "sec": "Intro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 1,
+          "page": 1,
+          "x0": 115.0,
+          "x1": 380.5
+        },
+        {
+          "bar": 6,
+          "start": 17.7083,
+          "end": 21.0417,
+          "sec": "Intro",
+          "chords": "Am7 → Em → Bm7",
+          "cue": "",
+          "sysIdx": 1,
+          "page": 1,
+          "x0": 380.5,
+          "x1": 666.0
+        },
+        {
+          "bar": 7,
+          "start": 21.0417,
+          "end": 24.375,
+          "sec": "Intro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 1,
+          "page": 1,
+          "x0": 666.0,
+          "x1": 917.5
+        },
+        {
+          "bar": 8,
+          "start": 24.375,
+          "end": 27.7083,
+          "sec": "Intro",
+          "chords": "Em9",
+          "cue": "",
+          "sysIdx": 1,
+          "page": 1,
+          "x0": 917.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 2,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        864,
+        1115
+      ],
+      "inkY": [
+        876,
+        1112
+      ],
+      "staffY": [
+        969,
+        1050
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 9,
+          "start": 27.7083,
+          "end": 31.0417,
+          "sec": "Intro",
+          "chords": "Em9",
+          "cue": "Don't you think...",
+          "sysIdx": 2,
+          "page": 1,
+          "x0": 115.0,
+          "x1": 451.5
+        },
+        {
+          "bar": 10,
+          "start": 31.0417,
+          "end": 34.375,
+          "sec": "Verse",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 2,
+          "page": 1,
+          "x0": 451.5,
+          "x1": 785.5
+        },
+        {
+          "bar": 11,
+          "start": 34.375,
+          "end": 37.7083,
+          "sec": "Verse",
+          "chords": "Em9",
+          "cue": "I've been burning...",
+          "sysIdx": 2,
+          "page": 1,
+          "x0": 785.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 3,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        1115,
+        1335
+      ],
+      "inkY": [
+        1119,
+        1333
+      ],
+      "staffY": [
+        1206,
+        1286
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 12,
+          "start": 37.7083,
+          "end": 41.0417,
+          "sec": "Verse",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 3,
+          "page": 1,
+          "x0": 115.0,
+          "x1": 648.5
+        },
+        {
+          "bar": 13,
+          "start": 41.0417,
+          "end": 44.375,
+          "sec": "Verse",
+          "chords": "Em9",
+          "cue": "I've got to face...",
+          "sysIdx": 3,
+          "page": 1,
+          "x0": 648.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 4,
+      "page": 1,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        1335,
+        1572
+      ],
+      "inkY": [
+        1337,
+        1556
+      ],
+      "staffY": [
+        1425,
+        1506
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 14,
+          "start": 44.375,
+          "end": 47.7083,
+          "sec": "Verse",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 4,
+          "page": 1,
+          "x0": 115.0,
+          "x1": 396.5
+        },
+        {
+          "bar": 15,
+          "start": 47.7083,
+          "end": 51.0417,
+          "sec": "Verse",
+          "chords": "Em9",
+          "cue": "I won't run...",
+          "sysIdx": 4,
+          "page": 1,
+          "x0": 396.5,
+          "x1": 625.5
+        },
+        {
+          "bar": 16,
+          "start": 51.0417,
+          "end": 54.375,
+          "sec": "Verse",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 4,
+          "page": 1,
+          "x0": 625.5,
+          "x1": 873.5
+        },
+        {
+          "bar": 17,
+          "start": 54.375,
+          "end": 57.7083,
+          "sec": "Verse",
+          "chords": "Em",
+          "cue": "",
+          "sysIdx": 4,
+          "page": 1,
+          "x0": 873.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 5,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        98,
+        365
+      ],
+      "inkY": [
+        104,
+        351
+      ],
+      "staffY": [
+        220,
+        300
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 18,
+          "start": 57.7083,
+          "end": 61.0417,
+          "sec": "Interlude",
+          "chords": "Cmaj7 → Am7",
+          "cue": "",
+          "sysIdx": 5,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 445.5
+        },
+        {
+          "bar": 19,
+          "start": 61.0417,
+          "end": 64.375,
+          "sec": "Interlude",
+          "chords": "G → Bm7",
+          "cue": "",
+          "sysIdx": 5,
+          "page": 2,
+          "x0": 445.5,
+          "x1": 784.5
+        },
+        {
+          "bar": 20,
+          "start": 64.375,
+          "end": 67.7083,
+          "sec": "Interlude",
+          "chords": "Am7 → C",
+          "cue": "",
+          "sysIdx": 5,
+          "page": 2,
+          "x0": 784.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 6,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        366,
+        622
+      ],
+      "inkY": [
+        380,
+        606
+      ],
+      "staffY": [
+        481,
+        561
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 21,
+          "start": 67.7083,
+          "end": 71.0417,
+          "sec": "Interlude",
+          "chords": "G → Bm7",
+          "cue": "",
+          "sysIdx": 6,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 480.5
+        },
+        {
+          "bar": 22,
+          "start": 71.0417,
+          "end": 74.375,
+          "sec": "Interlude",
+          "chords": "Cmaj7 → Am7",
+          "cue": "",
+          "sysIdx": 6,
+          "page": 2,
+          "x0": 480.5,
+          "x1": 810.5
+        },
+        {
+          "bar": 23,
+          "start": 74.375,
+          "end": 77.7083,
+          "sec": "Interlude",
+          "chords": "G → Bm7",
+          "cue": "",
+          "sysIdx": 6,
+          "page": 2,
+          "x0": 810.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 7,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        675,
+        865
+      ],
+      "inkY": [
+        689,
+        849
+      ],
+      "staffY": [
+        742,
+        822
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 24,
+          "start": 77.7083,
+          "end": 81.0417,
+          "sec": "Interlude",
+          "chords": "D",
+          "cue": "",
+          "sysIdx": 7,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 478.5
+        },
+        {
+          "bar": 25,
+          "start": 81.0417,
+          "end": 84.375,
+          "sec": "Interlude",
+          "chords": "D/F#",
+          "cue": "",
+          "sysIdx": 7,
+          "page": 2,
+          "x0": 478.5,
+          "x1": 827.5
+        },
+        {
+          "bar": 26,
+          "start": 84.375,
+          "end": 87.7083,
+          "sec": "Interlude",
+          "chords": "G → D",
+          "cue": "",
+          "sysIdx": 7,
+          "page": 2,
+          "x0": 827.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 8,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        916,
+        1160
+      ],
+      "inkY": [
+        930,
+        1144
+      ],
+      "staffY": [
+        1003,
+        1083
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 27,
+          "start": 87.7083,
+          "end": 91.0417,
+          "sec": "Interlude",
+          "chords": "D",
+          "cue": "You will know...",
+          "sysIdx": 8,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 349.5
+        },
+        {
+          "bar": 28,
+          "start": 91.0417,
+          "end": 94.375,
+          "sec": "Chorus I",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 8,
+          "page": 2,
+          "x0": 349.5,
+          "x1": 715.5
+        },
+        {
+          "bar": 29,
+          "start": 94.375,
+          "end": 97.7083,
+          "sec": "Chorus I",
+          "chords": "Em → Am7",
+          "cue": "Must be ragged...",
+          "sysIdx": 8,
+          "page": 2,
+          "x0": 715.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 9,
+      "page": 2,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        1199,
+        1433
+      ],
+      "inkY": [
+        1213,
+        1417
+      ],
+      "staffY": [
+        1264,
+        1344
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 30,
+          "start": 97.7083,
+          "end": 101.0417,
+          "sec": "Chorus I",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 9,
+          "page": 2,
+          "x0": 115.0,
+          "x1": 443.5
+        },
+        {
+          "bar": 31,
+          "start": 101.0417,
+          "end": 104.375,
+          "sec": "Chorus I",
+          "chords": "Em → Am7",
+          "cue": "Even if my body's...",
+          "sysIdx": 9,
+          "page": 2,
+          "x0": 443.5,
+          "x1": 792.5
+        },
+        {
+          "bar": 32,
+          "start": 104.375,
+          "end": 107.7083,
+          "sec": "Chorus I",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 9,
+          "page": 2,
+          "x0": 792.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 10,
+      "page": 3,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        98,
+        345
+      ],
+      "inkY": [
+        103,
+        329
+      ],
+      "staffY": [
+        176,
+        256
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 33,
+          "start": 107.7083,
+          "end": 111.0417,
+          "sec": "Chorus I",
+          "chords": "Em → Am7",
+          "cue": "I don't want to go...",
+          "sysIdx": 10,
+          "page": 3,
+          "x0": 115.0,
+          "x1": 503.5
+        },
+        {
+          "bar": 34,
+          "start": 111.0417,
+          "end": 114.375,
+          "sec": "Chorus I",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 10,
+          "page": 3,
+          "x0": 503.5,
+          "x1": 819.0
+        },
+        {
+          "bar": 35,
+          "start": 114.375,
+          "end": 117.7083,
+          "sec": "Chorus I",
+          "chords": "Em → Bm7",
+          "cue": "So cry no more...",
+          "sysIdx": 10,
+          "page": 3,
+          "x0": 819.0,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 11,
+      "page": 3,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        404,
+        647
+      ],
+      "inkY": [
+        418,
+        631
+      ],
+      "staffY": [
+        488,
+        568
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 36,
+          "start": 117.7083,
+          "end": 121.0417,
+          "sec": "Chorus II & Outro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 11,
+          "page": 3,
+          "x0": 115.0,
+          "x1": 454.5
+        },
+        {
+          "bar": 37,
+          "start": 121.0417,
+          "end": 124.375,
+          "sec": "Chorus II & Outro",
+          "chords": "Em → Bm7",
+          "cue": "Go ahead, be proud...",
+          "sysIdx": 11,
+          "page": 3,
+          "x0": 454.5,
+          "x1": 800.5
+        },
+        {
+          "bar": 38,
+          "start": 124.375,
+          "end": 127.7083,
+          "sec": "Chorus II & Outro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 11,
+          "page": 3,
+          "x0": 800.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 12,
+      "page": 3,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        735,
+        957
+      ],
+      "inkY": [
+        749,
+        941
+      ],
+      "staffY": [
+        799,
+        880
+      ],
+      "x0": 115.0,
+      "x1": 1161.5,
+      "bars": [
+        {
+          "bar": 39,
+          "start": 127.7083,
+          "end": 131.0417,
+          "sec": "Chorus II & Outro",
+          "chords": "Em → Bm7",
+          "cue": "You are the one...",
+          "sysIdx": 12,
+          "page": 3,
+          "x0": 115.0,
+          "x1": 441.5
+        },
+        {
+          "bar": 40,
+          "start": 131.0417,
+          "end": 134.375,
+          "sec": "Chorus II & Outro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 12,
+          "page": 3,
+          "x0": 441.5,
+          "x1": 749.5
+        },
+        {
+          "bar": 41,
+          "start": 134.375,
+          "end": 137.7083,
+          "sec": "Chorus II & Outro",
+          "chords": "Em → Bm7",
+          "cue": "You guide us far...",
+          "sysIdx": 12,
+          "page": 3,
+          "x0": 749.5,
+          "x1": 1161.5
+        }
+      ]
+    },
+    {
+      "sysIdx": 13,
+      "page": 3,
+      "width": 1241,
+      "height": 1754,
+      "sliceY": [
+        1025,
+        1250
+      ],
+      "inkY": [
+        1039,
+        1234
+      ],
+      "staffY": [
+        1111,
+        1192
+      ],
+      "x0": 115.0,
+      "x1": 1157.8,
+      "bars": [
+        {
+          "bar": 42,
+          "start": 137.7083,
+          "end": 141.0417,
+          "sec": "Chorus II & Outro",
+          "chords": "Cmaj7 → D",
+          "cue": "",
+          "sysIdx": 13,
+          "page": 3,
+          "x0": 115.0,
+          "x1": 569.5
+        },
+        {
+          "bar": 43,
+          "start": 141.0417,
+          "end": 144.375,
+          "sec": "Chorus II & Outro",
+          "chords": "Em → Em9",
+          "cue": "",
+          "sysIdx": 13,
+          "page": 3,
+          "x0": 569.5,
+          "x1": 1026.5
+        },
+        {
+          "bar": 44,
+          "start": 144.375,
+          "end": 151.8,
+          "sec": "Chorus II & Outro",
+          "chords": "Em",
+          "cue": "",
+          "sysIdx": 13,
+          "page": 3,
+          "x0": 1026.5,
+          "x1": 1157.8
+        }
+      ]
+    }
+  ],
+  "bars": [
+    {
+      "bar": 0,
+      "start": 0.2083,
+      "end": 1.0417,
+      "sec": "Intro",
+      "chords": "弱起 Pick-up",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 152.0,
+      "x1": 213.5
+    },
+    {
+      "bar": 1,
+      "start": 1.0417,
+      "end": 4.375,
+      "sec": "Intro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 213.5,
+      "x1": 459.5
+    },
+    {
+      "bar": 2,
+      "start": 4.375,
+      "end": 7.7083,
+      "sec": "Intro",
+      "chords": "Em9 → Bm7",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 459.5,
+      "x1": 718.5
+    },
+    {
+      "bar": 3,
+      "start": 7.7083,
+      "end": 11.0417,
+      "sec": "Intro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 718.5,
+      "x1": 944.5
+    },
+    {
+      "bar": 4,
+      "start": 11.0417,
+      "end": 14.375,
+      "sec": "Intro",
+      "chords": "Em",
+      "cue": "",
+      "sysIdx": 0,
+      "page": 1,
+      "x0": 944.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 5,
+      "start": 14.375,
+      "end": 17.7083,
+      "sec": "Intro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 1,
+      "page": 1,
+      "x0": 115.0,
+      "x1": 380.5
+    },
+    {
+      "bar": 6,
+      "start": 17.7083,
+      "end": 21.0417,
+      "sec": "Intro",
+      "chords": "Am7 → Em → Bm7",
+      "cue": "",
+      "sysIdx": 1,
+      "page": 1,
+      "x0": 380.5,
+      "x1": 666.0
+    },
+    {
+      "bar": 7,
+      "start": 21.0417,
+      "end": 24.375,
+      "sec": "Intro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 1,
+      "page": 1,
+      "x0": 666.0,
+      "x1": 917.5
+    },
+    {
+      "bar": 8,
+      "start": 24.375,
+      "end": 27.7083,
+      "sec": "Intro",
+      "chords": "Em9",
+      "cue": "",
+      "sysIdx": 1,
+      "page": 1,
+      "x0": 917.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 9,
+      "start": 27.7083,
+      "end": 31.0417,
+      "sec": "Intro",
+      "chords": "Em9",
+      "cue": "Don't you think...",
+      "sysIdx": 2,
+      "page": 1,
+      "x0": 115.0,
+      "x1": 451.5
+    },
+    {
+      "bar": 10,
+      "start": 31.0417,
+      "end": 34.375,
+      "sec": "Verse",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 2,
+      "page": 1,
+      "x0": 451.5,
+      "x1": 785.5
+    },
+    {
+      "bar": 11,
+      "start": 34.375,
+      "end": 37.7083,
+      "sec": "Verse",
+      "chords": "Em9",
+      "cue": "I've been burning...",
+      "sysIdx": 2,
+      "page": 1,
+      "x0": 785.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 12,
+      "start": 37.7083,
+      "end": 41.0417,
+      "sec": "Verse",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 3,
+      "page": 1,
+      "x0": 115.0,
+      "x1": 648.5
+    },
+    {
+      "bar": 13,
+      "start": 41.0417,
+      "end": 44.375,
+      "sec": "Verse",
+      "chords": "Em9",
+      "cue": "I've got to face...",
+      "sysIdx": 3,
+      "page": 1,
+      "x0": 648.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 14,
+      "start": 44.375,
+      "end": 47.7083,
+      "sec": "Verse",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 4,
+      "page": 1,
+      "x0": 115.0,
+      "x1": 396.5
+    },
+    {
+      "bar": 15,
+      "start": 47.7083,
+      "end": 51.0417,
+      "sec": "Verse",
+      "chords": "Em9",
+      "cue": "I won't run...",
+      "sysIdx": 4,
+      "page": 1,
+      "x0": 396.5,
+      "x1": 625.5
+    },
+    {
+      "bar": 16,
+      "start": 51.0417,
+      "end": 54.375,
+      "sec": "Verse",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 4,
+      "page": 1,
+      "x0": 625.5,
+      "x1": 873.5
+    },
+    {
+      "bar": 17,
+      "start": 54.375,
+      "end": 57.7083,
+      "sec": "Verse",
+      "chords": "Em",
+      "cue": "",
+      "sysIdx": 4,
+      "page": 1,
+      "x0": 873.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 18,
+      "start": 57.7083,
+      "end": 61.0417,
+      "sec": "Interlude",
+      "chords": "Cmaj7 → Am7",
+      "cue": "",
+      "sysIdx": 5,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 445.5
+    },
+    {
+      "bar": 19,
+      "start": 61.0417,
+      "end": 64.375,
+      "sec": "Interlude",
+      "chords": "G → Bm7",
+      "cue": "",
+      "sysIdx": 5,
+      "page": 2,
+      "x0": 445.5,
+      "x1": 784.5
+    },
+    {
+      "bar": 20,
+      "start": 64.375,
+      "end": 67.7083,
+      "sec": "Interlude",
+      "chords": "Am7 → C",
+      "cue": "",
+      "sysIdx": 5,
+      "page": 2,
+      "x0": 784.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 21,
+      "start": 67.7083,
+      "end": 71.0417,
+      "sec": "Interlude",
+      "chords": "G → Bm7",
+      "cue": "",
+      "sysIdx": 6,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 480.5
+    },
+    {
+      "bar": 22,
+      "start": 71.0417,
+      "end": 74.375,
+      "sec": "Interlude",
+      "chords": "Cmaj7 → Am7",
+      "cue": "",
+      "sysIdx": 6,
+      "page": 2,
+      "x0": 480.5,
+      "x1": 810.5
+    },
+    {
+      "bar": 23,
+      "start": 74.375,
+      "end": 77.7083,
+      "sec": "Interlude",
+      "chords": "G → Bm7",
+      "cue": "",
+      "sysIdx": 6,
+      "page": 2,
+      "x0": 810.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 24,
+      "start": 77.7083,
+      "end": 81.0417,
+      "sec": "Interlude",
+      "chords": "D",
+      "cue": "",
+      "sysIdx": 7,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 478.5
+    },
+    {
+      "bar": 25,
+      "start": 81.0417,
+      "end": 84.375,
+      "sec": "Interlude",
+      "chords": "D/F#",
+      "cue": "",
+      "sysIdx": 7,
+      "page": 2,
+      "x0": 478.5,
+      "x1": 827.5
+    },
+    {
+      "bar": 26,
+      "start": 84.375,
+      "end": 87.7083,
+      "sec": "Interlude",
+      "chords": "G → D",
+      "cue": "",
+      "sysIdx": 7,
+      "page": 2,
+      "x0": 827.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 27,
+      "start": 87.7083,
+      "end": 91.0417,
+      "sec": "Interlude",
+      "chords": "D",
+      "cue": "You will know...",
+      "sysIdx": 8,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 349.5
+    },
+    {
+      "bar": 28,
+      "start": 91.0417,
+      "end": 94.375,
+      "sec": "Chorus I",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 8,
+      "page": 2,
+      "x0": 349.5,
+      "x1": 715.5
+    },
+    {
+      "bar": 29,
+      "start": 94.375,
+      "end": 97.7083,
+      "sec": "Chorus I",
+      "chords": "Em → Am7",
+      "cue": "Must be ragged...",
+      "sysIdx": 8,
+      "page": 2,
+      "x0": 715.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 30,
+      "start": 97.7083,
+      "end": 101.0417,
+      "sec": "Chorus I",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 9,
+      "page": 2,
+      "x0": 115.0,
+      "x1": 443.5
+    },
+    {
+      "bar": 31,
+      "start": 101.0417,
+      "end": 104.375,
+      "sec": "Chorus I",
+      "chords": "Em → Am7",
+      "cue": "Even if my body's...",
+      "sysIdx": 9,
+      "page": 2,
+      "x0": 443.5,
+      "x1": 792.5
+    },
+    {
+      "bar": 32,
+      "start": 104.375,
+      "end": 107.7083,
+      "sec": "Chorus I",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 9,
+      "page": 2,
+      "x0": 792.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 33,
+      "start": 107.7083,
+      "end": 111.0417,
+      "sec": "Chorus I",
+      "chords": "Em → Am7",
+      "cue": "I don't want to go...",
+      "sysIdx": 10,
+      "page": 3,
+      "x0": 115.0,
+      "x1": 503.5
+    },
+    {
+      "bar": 34,
+      "start": 111.0417,
+      "end": 114.375,
+      "sec": "Chorus I",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 10,
+      "page": 3,
+      "x0": 503.5,
+      "x1": 819.0
+    },
+    {
+      "bar": 35,
+      "start": 114.375,
+      "end": 117.7083,
+      "sec": "Chorus I",
+      "chords": "Em → Bm7",
+      "cue": "So cry no more...",
+      "sysIdx": 10,
+      "page": 3,
+      "x0": 819.0,
+      "x1": 1161.5
+    },
+    {
+      "bar": 36,
+      "start": 117.7083,
+      "end": 121.0417,
+      "sec": "Chorus II & Outro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 11,
+      "page": 3,
+      "x0": 115.0,
+      "x1": 454.5
+    },
+    {
+      "bar": 37,
+      "start": 121.0417,
+      "end": 124.375,
+      "sec": "Chorus II & Outro",
+      "chords": "Em → Bm7",
+      "cue": "Go ahead, be proud...",
+      "sysIdx": 11,
+      "page": 3,
+      "x0": 454.5,
+      "x1": 800.5
+    },
+    {
+      "bar": 38,
+      "start": 124.375,
+      "end": 127.7083,
+      "sec": "Chorus II & Outro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 11,
+      "page": 3,
+      "x0": 800.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 39,
+      "start": 127.7083,
+      "end": 131.0417,
+      "sec": "Chorus II & Outro",
+      "chords": "Em → Bm7",
+      "cue": "You are the one...",
+      "sysIdx": 12,
+      "page": 3,
+      "x0": 115.0,
+      "x1": 441.5
+    },
+    {
+      "bar": 40,
+      "start": 131.0417,
+      "end": 134.375,
+      "sec": "Chorus II & Outro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 12,
+      "page": 3,
+      "x0": 441.5,
+      "x1": 749.5
+    },
+    {
+      "bar": 41,
+      "start": 134.375,
+      "end": 137.7083,
+      "sec": "Chorus II & Outro",
+      "chords": "Em → Bm7",
+      "cue": "You guide us far...",
+      "sysIdx": 12,
+      "page": 3,
+      "x0": 749.5,
+      "x1": 1161.5
+    },
+    {
+      "bar": 42,
+      "start": 137.7083,
+      "end": 141.0417,
+      "sec": "Chorus II & Outro",
+      "chords": "Cmaj7 → D",
+      "cue": "",
+      "sysIdx": 13,
+      "page": 3,
+      "x0": 115.0,
+      "x1": 569.5
+    },
+    {
+      "bar": 43,
+      "start": 141.0417,
+      "end": 144.375,
+      "sec": "Chorus II & Outro",
+      "chords": "Em → Em9",
+      "cue": "",
+      "sysIdx": 13,
+      "page": 3,
+      "x0": 569.5,
+      "x1": 1026.5
+    },
+    {
+      "bar": 44,
+      "start": 144.375,
+      "end": 151.8,
+      "sec": "Chorus II & Outro",
+      "chords": "Em",
+      "cue": "",
+      "sysIdx": 13,
+      "page": 3,
+      "x0": 1026.5,
+      "x1": 1157.8
+    }
+  ]
+}
