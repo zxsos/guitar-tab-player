@@ -80,6 +80,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex: 1;
       min-width: 0;
     }
 
@@ -1183,12 +1184,6 @@
       white-space: nowrap;
     }
 
-    .lib-pr-hint {
-      font-size: 11.5px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
     .lib-actions {
       display: flex;
       align-items: center;
@@ -1304,6 +1299,8 @@
       border-radius: 12px;
       background: #fafafa;
       overflow: hidden;
+      content-visibility: auto;
+      contain-intrinsic-size: auto 120px;
     }
 
     .lib-group-head {
@@ -1332,20 +1329,38 @@
       padding: 10px 12px;
       background: var(--paper);
       border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+
+    .lib-song-row:hover {
+      background: #fafafa;
+    }
+
+    .lib-song-row:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .pill-btn:focus-visible,
+    .icon-btn:focus-visible,
+    .lib-btn-sm:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
     .lib-song-row:last-child {
       border-bottom: 0;
     }
 
-    .lib-song-row.active {
+    .lib-song-row.active,
+    .lib-song-row.active:hover {
       background: var(--accent-soft);
     }
 
     .lib-song-main {
       min-width: 0;
       flex: 1;
-      cursor: pointer;
     }
 
     .lib-song-top {
@@ -1394,29 +1409,6 @@
       color: var(--muted);
       border: 1px dashed var(--line);
       border-radius: 12px;
-    }
-
-    .lib-modal-foot {
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-      font-size: 11.5px;
-      color: var(--muted);
-    }
-
-    .lib-modal-foot a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .lib-modal-foot a:hover {
-      text-decoration: underline;
     }
 
     /* Calibration Form */
@@ -1737,6 +1729,41 @@
     }
 
     @media (max-width: 640px) {
+      .top-bar {
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      .top-bar-inner {
+        padding: 0 10px;
+        gap: 8px;
+      }
+      .brand-logo {
+        display: none;
+      }
+      .bar-title-wrap {
+        min-width: 0;
+        overflow: hidden;
+      }
+      .bar-title {
+        font-size: 14px;
+      }
+      .top-actions {
+        gap: 4px;
+      }
+      .pill-btn {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        gap: 0;
+        justify-content: center;
+      }
+      .pill-label {
+        display: none;
+      }
+      .gh-link {
+        display: none;
+      }
       body.stage-open .sheet-wrap {
         padding: 6px 8px 84px;
       }
@@ -1787,16 +1814,32 @@
       .import-footer-btns {
         justify-content: flex-end;
       }
+      .modal-backdrop {
+        align-items: flex-end;
+        padding: 0;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      .modal-card {
+        width: 100%;
+        max-height: 88vh;
+        border-radius: 16px 16px 0 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        padding: 16px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+      }
+      .modal-card.import-card,
+      .modal-card.library-card {
+        width: 100%;
+      }
+      .modal-card.wide {
+        width: 100%;
+        border-radius: 12px;
+      }
     }
 
     @media (max-width: 520px) {
-      .bar-title-wrap {
-        display: none;
-      }
-      .pill-btn {
-        padding: 0 10px;
-        font-size: 12px;
-      }
       .lib-grid {
         grid-template-columns: 1fr;
       }
@@ -1823,24 +1866,24 @@
       </div>
 
       <div class="top-actions">
-        <button type="button" class="pill-btn active" id="stage-toggle-btn" title="切换实时指板 / 下落轨道" aria-pressed="true">
+        <button type="button" class="pill-btn active" id="stage-toggle-btn" title="弹奏演示" aria-label="弹奏演示" aria-pressed="true">
           <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="5" x2="15" y2="19"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
-          弹奏演示
+          <span class="pill-label">演示</span>
         </button>
 
-        <button type="button" class="pill-btn" id="library-btn" title="浏览在线指弹曲库（按歌手分类）">
+        <button type="button" class="pill-btn" id="library-btn" title="在线曲库" aria-label="在线曲库">
           <svg class="ico" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M9 10h6"/><path d="M9 14h4"/></svg>
-          在线曲库
+          <span class="pill-label">曲库</span>
         </button>
 
-        <button type="button" class="pill-btn" id="import-btn">
+        <button type="button" class="pill-btn" id="import-btn" title="导入" aria-label="导入">
           <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          导入
+          <span class="pill-label">导入</span>
         </button>
 
-        <button type="button" class="pill-btn hidden" id="topbar-save-lib-btn" title="复制规范源码并去 GitHub 提 PR">
+        <button type="button" class="pill-btn hidden" id="topbar-save-lib-btn" title="提交到谱库" aria-label="提交到谱库">
           <svg class="ico" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          提交到谱库 (PR)
+          <span class="pill-label">提 PR</span>
         </button>
 
         <button type="button" class="icon-btn" id="open-pdf-btn" title="原版 PDF" aria-label="原版 PDF">
@@ -1851,7 +1894,7 @@
           <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
         </button>
 
-        <a class="icon-btn" href="https://github.com/zxsos/guitar-tab-player" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">
+        <a class="icon-btn gh-link" href="https://github.com/zxsos/guitar-tab-player" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">
           <svg class="ico" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
         </a>
 
@@ -1878,6 +1921,10 @@
             恢复示例曲目
           </button>
           <div class="menu-sep"></div>
+          <a class="menu-item" href="https://github.com/zxsos/guitar-tab-player" target="_blank" rel="noopener" role="menuitem">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+            播放器源码
+          </a>
           <a class="menu-item" href="https://github.com/zxsos/fingerstyle-guitar-tab-skill" target="_blank" rel="noopener" role="menuitem">
             <svg class="ico" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             Skill 仓库
@@ -2068,8 +2115,7 @@
 
       <div class="lib-save-panel hidden" id="lib-save-panel">
         <div class="lib-save-head">
-          <span class="lib-save-title">保存到云端谱库（按歌手分类）</span>
-          <span class="lib-group-count">GitHub PR 自动编译</span>
+          <span class="lib-save-title">保存到曲库</span>
         </div>
         <div class="lib-grid">
           <label class="lib-field">
@@ -2092,17 +2138,16 @@
         <div class="lib-meta-summary" id="lib-meta-summary">-</div>
         <div class="lib-path-preview" id="lib-path-preview">-</div>
         <div class="lib-actions">
-          <span class="lib-pr-hint">提 PR 后由 GitHub Actions 自动质检并编译上架</span>
           <div class="lib-action-btns">
-            <button type="button" class="lib-btn-sm" id="lib-download-py-btn">下载规范 .py</button>
-            <button type="button" class="lib-btn-sm primary" id="lib-pr-btn">复制源码并去 GitHub 提 PR</button>
+            <button type="button" class="lib-btn-sm" id="lib-download-py-btn">下载 .py</button>
+            <button type="button" class="lib-btn-sm primary" id="lib-pr-btn">提交 PR</button>
           </div>
         </div>
         <div class="lib-status hidden" id="lib-status"></div>
       </div>
 
       <div class="import-footer">
-        <span class="import-privacy">音视频仅在浏览器本地播放；如需保存源码至曲库，点击上方按钮复制去 GitHub 提 PR</span>
+        <span class="import-privacy">音视频仅在本地播放</span>
         <div class="import-footer-btns">
           <button type="button" class="btn-ghost" id="import-cancel-btn">取消</button>
           <button type="button" class="btn-primary" id="import-start-btn" disabled>开始练习</button>
@@ -2112,24 +2157,20 @@
   </div>
 
   <!-- Cloud Score Library Modal -->
-  <div class="modal-backdrop" id="library-modal" role="dialog" aria-modal="true" aria-label="在线指弹曲库">
+  <div class="modal-backdrop" id="library-modal" role="dialog" aria-modal="true" aria-label="在线曲库">
     <div class="modal-card library-card">
       <div class="modal-head">
-        <h2 class="modal-title">在线指弹曲库（按歌手分类）</h2>
+        <h2 class="modal-title">在线曲库</h2>
         <button type="button" class="icon-btn" id="close-library-btn" title="关闭" aria-label="关闭">
           <svg class="ico" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="lib-search-row">
-        <input type="search" id="lib-search-input" placeholder="搜索歌手、曲名或难度（新手 / 标准 / 进阶）…" />
+        <input type="search" id="lib-search-input" placeholder="搜索歌手或曲名" />
         <button type="button" class="lib-btn-sm" id="lib-refresh-btn">刷新</button>
       </div>
-      <div class="lib-modal-meta" id="lib-modal-meta">正在读取云端曲库…</div>
+      <div class="lib-modal-meta" id="lib-modal-meta">加载中…</div>
       <div class="lib-catalog-list" id="lib-catalog-list"></div>
-      <div class="lib-modal-foot">
-        <a href="https://github.com/zxsos/guitar-tab-library" target="_blank" rel="noopener">GitHub 源码库</a>
-        <span>合并 PR 后自动编译上架 · 访客免账号直连播放</span>
-      </div>
     </div>
   </div>
 
@@ -8789,6 +8830,8 @@
         const img = document.createElement("img");
         img.alt = "六线谱";
         img.draggable = false;
+        img.decoding = "async";
+        img.loading = "lazy";
         img.style.top = (-(sliceY0 / sliceH) * 100).toFixed(4) + "%";
         img.addEventListener("load", () => vp.classList.remove("loading"), { once: true });
         img.addEventListener("error", () => vp.classList.remove("loading"), { once: true });
@@ -11569,7 +11612,7 @@
           libTitleInput.value,
           libTierSelect.value
         );
-        libPathPreviewEl.textContent = "目标路径：" + LIBRARY_REPO_SLUG + "/" + p;
+        libPathPreviewEl.textContent = p;
       }
 
       function setLibStatus(status, text, linkUrl, linkText) {
@@ -11580,7 +11623,7 @@
           a.href = linkUrl;
           a.target = "_blank";
           a.rel = "noopener";
-          a.textContent = linkText || "在 GitHub 查看";
+          a.textContent = linkText || "打开链接";
           libStatusEl.appendChild(a);
         }
         libStatusEl.classList.remove("hidden");
@@ -11597,7 +11640,7 @@
         if (seq !== libDedupRunSeq) return;
         if (dup) {
           const url = dup.githubUrl || ("https://github.com/" + LIBRARY_REPO_SLUG + "/blob/main/" + encodePathSegments(dup.path));
-          setLibStatus("ok", "云端谱库已收录相同源码（无需重复提 PR）：", url, "查看谱库文件");
+          setLibStatus("ok", "曲库已收录：", url, "查看文件");
         } else {
           libStatusEl.classList.add("hidden");
         }
@@ -11611,10 +11654,9 @@
         libTitleInput.value = a.title;
         libTierSelect.value = a.tier;
         const capoStr = a.capo > 0 ? ("Capo " + a.capo) : "标准调弦";
-        libMetaSummaryEl.textContent =
-          "解析结果：" + a.bars + " 小节 · " + a.notes + " 音符 · " + capoStr +
-          " · 最高 " + a.maxFret + " 品 · " +
-          (a.crossings > 0 ? (a.crossings + " 处声部交叉") : "0 声部交叉");
+        const metaParts = [a.bars + " 小节", a.notes + " 音符", capoStr, "最高 " + a.maxFret + " 品"];
+        if (a.crossings > 0) metaParts.push(a.crossings + " 处声部交叉");
+        libMetaSummaryEl.textContent = metaParts.join(" · ");
         updateLibPathPreview();
         libSavePanel.classList.remove("hidden");
         runPreDedupHint(pyText, a);
@@ -11667,8 +11709,8 @@
         const dup = await findDuplicateInCatalog(payload, cat);
         if (dup) {
           const dupUrl = dup.githubUrl || ("https://github.com/" + LIBRARY_REPO_SLUG + "/blob/main/" + encodePathSegments(dup.path));
-          setLibStatus("ok", "云端谱库已收录相同源码，无需重复提 PR：", dupUrl, "查看谱库文件");
-          showToast("云端谱库已有相同源码");
+          setLibStatus("ok", "曲库已收录：", dupUrl, "查看文件");
+          showToast("曲库已有相同源码");
           return;
         }
 
@@ -11687,15 +11729,15 @@
         if (copied) {
           setLibStatus(
             "ok",
-            "已复制 score_data.py 到剪贴板，在打开的 GitHub 页面粘贴后选「Create a new branch and start a pull request」即可，合并后 Actions 自动编译上架。",
+            "源码已复制，在 GitHub 粘贴并提交 PR：",
             ghUrl,
-            "打开 GitHub PR 页"
+            "打开 GitHub"
           );
-          showToast("已复制源码，请在 GitHub 页面创建 PR");
+          showToast("源码已复制，请在 GitHub 创建 PR");
         } else {
           setLibStatus(
             "warn",
-            "已打开 GitHub 新建文件页面；如未自动填入，请点左侧「下载规范 .py」并提交 PR：",
+            "请点击「下载 .py」后在 GitHub 提交 PR：",
             ghUrl,
             "前往 GitHub"
           );
@@ -11715,14 +11757,14 @@
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setLibStatus("ok", "已按规范命名导出：" + relPath + "（可直接在 GitHub 拖入该目录提 PR）");
+        setLibStatus("ok", "已导出：" + relPath);
       }
 
       async function loadCloudSong(item) {
         if (!item || !item.songBase) return;
         const baseSongUrl = LIBRARY_SITE_BASE + encodePathSegments(item.songBase) + "/";
         const manifestRel = encodePathSegments(item.manifestFile || "sync_manifest.json");
-        libModalMeta.textContent = "正在加载「" + item.artist + " - " + item.title + "」…";
+        libModalMeta.textContent = "加载中…";
         try {
           const resp = await fetch(baseSongUrl + manifestRel, { cache: "no-cache" });
           if (!resp.ok) throw new Error("HTTP " + resp.status);
@@ -11750,11 +11792,11 @@
           updateUrlSongSlug(activeCloudSlug);
           if (sheetPane) sheetPane.scrollTop = 0;
           window.scrollTo({ top: 0, behavior: "smooth" });
-          showToast("已载入云端曲谱「" + item.artist + " - " + item.title + "」", { duration: 3500 });
+          showToast("已载入「" + item.artist + " - " + item.title + "」", { duration: 3000 });
         } catch (err) {
           const msg = err && err.message ? err.message : "加载失败";
-          libModalMeta.textContent = "加载曲谱失败：" + msg;
-          showToast("加载云端曲谱失败：" + msg, { type: "error", duration: 4000 });
+          libModalMeta.textContent = "加载失败：" + msg;
+          showToast("加载失败：" + msg, { type: "error", duration: 4000 });
         }
       }
 
@@ -11763,9 +11805,9 @@
         if (!catalog || !Array.isArray(catalog.items)) {
           const empty = document.createElement("div");
           empty.className = "lib-empty";
-          empty.textContent = "云端曲库暂不可用或尚未完成首次构建发布，可稍后点击「刷新」重试。";
+          empty.textContent = "曲库暂不可用，点刷新重试";
           libCatalogList.appendChild(empty);
-          libModalMeta.textContent = "未获取到 catalog.json";
+          libModalMeta.textContent = "曲库暂不可用";
           return;
         }
 
@@ -11783,17 +11825,19 @@
           byArtist.get(artist).push(it);
         }
 
-        libModalMeta.textContent =
-          "共收录 " + catalog.items.length + " 首（当前显示 " + matched.length + " 首 · " + byArtist.size + " 位歌手）";
+        libModalMeta.textContent = q
+          ? (matched.length + " / " + catalog.items.length + " 首")
+          : (catalog.items.length + " 首");
 
         if (!matched.length) {
           const empty = document.createElement("div");
           empty.className = "lib-empty";
-          empty.textContent = q ? "没有匹配的曲目，换个歌手或关键词试试。" : "曲库暂无曲目。";
+          empty.textContent = q ? "无匹配曲目" : "暂无曲目";
           libCatalogList.appendChild(empty);
           return;
         }
 
+        const frag = document.createDocumentFragment();
         const tierOrd = { beginner: 0, standard: 1, advanced: 2 };
         const sortedArtists = Array.from(byArtist.keys()).sort((a, b) => a.localeCompare(b, "zh-CN"));
         for (const artist of sortedArtists) {
@@ -11816,10 +11860,19 @@
           for (const it of songs) {
             const row = document.createElement("div");
             row.className = "lib-song-row" + (activeCloudSlug && activeCloudSlug === it.slug ? " active" : "");
+            row.setAttribute("role", "button");
+            row.tabIndex = 0;
+            row.setAttribute("aria-label", (it.artist ? it.artist + " - " : "") + (it.title || "Untitled"));
+            row.addEventListener("click", () => loadCloudSong(it));
+            row.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                loadCloudSong(it);
+              }
+            });
 
             const main = document.createElement("div");
             main.className = "lib-song-main";
-            main.addEventListener("click", () => loadCloudSong(it));
 
             const top = document.createElement("div");
             top.className = "lib-song-top";
@@ -11837,46 +11890,35 @@
             metaParts.push((it.capo || 0) > 0 ? ("Capo " + it.capo) : "标准调弦");
             if (Number.isFinite(Number(it.maxFret)) && it.maxFret > 0) metaParts.push("最高 " + it.maxFret + " 品");
             if (it.bpm) metaParts.push(it.bpm + " BPM");
-            if (it.bars) metaParts.push(it.bars + " 小节");
             if (it.duration) metaParts.push(fmtTime(it.duration));
             sub.textContent = metaParts.join(" · ");
 
             main.append(top, sub);
+            row.appendChild(main);
 
-            const acts = document.createElement("div");
-            acts.className = "lib-song-actions";
-
-            if (it.githubUrl) {
-              const srcLink = document.createElement("a");
-              srcLink.className = "lib-btn-sm";
-              srcLink.href = it.githubUrl;
-              srcLink.target = "_blank";
-              srcLink.rel = "noopener";
-              srcLink.textContent = ".py";
-              acts.appendChild(srcLink);
-            }
             if (it.bundleFile && it.songBase) {
+              const acts = document.createElement("div");
+              acts.className = "lib-song-actions";
               const zipLink = document.createElement("a");
-              zipLink.className = "lib-btn-sm";
+              zipLink.className = "icon-btn";
               zipLink.href = LIBRARY_SITE_BASE + encodePathSegments(it.songBase + "/" + it.bundleFile);
               zipLink.download = it.bundleFile;
-              zipLink.textContent = "ZIP";
+              zipLink.title = "下载曲谱包 (.zip)";
+              zipLink.setAttribute("aria-label", "下载曲谱包");
+              zipLink.innerHTML =
+                '<svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+              zipLink.addEventListener("click", (e) => e.stopPropagation());
+              zipLink.addEventListener("keydown", (e) => e.stopPropagation());
               acts.appendChild(zipLink);
+              row.appendChild(acts);
             }
 
-            const playSongBtn = document.createElement("button");
-            playSongBtn.type = "button";
-            playSongBtn.className = "lib-btn-sm primary";
-            playSongBtn.textContent = (activeCloudSlug && activeCloudSlug === it.slug) ? "当前在播" : "立即播放";
-            playSongBtn.addEventListener("click", () => loadCloudSong(it));
-            acts.appendChild(playSongBtn);
-
-            row.append(main, acts);
             groupEl.appendChild(row);
           }
 
-          libCatalogList.appendChild(groupEl);
+          frag.appendChild(groupEl);
         }
+        libCatalogList.appendChild(frag);
       }
 
       async function openLibraryModal({ force = false } = {}) {
@@ -11885,7 +11927,11 @@
         pdfModal.classList.remove("open");
         calModal.classList.remove("open");
         libraryModal.classList.add("open");
-        libModalMeta.textContent = "正在读取云端曲库…";
+        if (cloudCatalogCache && !force) {
+          renderCloudCatalog(cloudCatalogCache, libSearchInput.value);
+          return;
+        }
+        libModalMeta.textContent = "加载中…";
         const cat = await fetchCloudCatalog({ force });
         renderCloudCatalog(cat, libSearchInput.value);
       }
@@ -11899,8 +11945,12 @@
       libraryModal.addEventListener("click", (e) => {
         if (e.target === libraryModal) closeLibraryModal();
       });
+      let libSearchTimer = 0;
       libSearchInput.addEventListener("input", () => {
-        renderCloudCatalog(cloudCatalogCache, libSearchInput.value);
+        clearTimeout(libSearchTimer);
+        libSearchTimer = setTimeout(() => {
+          renderCloudCatalog(cloudCatalogCache, libSearchInput.value);
+        }, 120);
       });
       libRefreshBtn.addEventListener("click", () => openLibraryModal({ force: true }));
 
@@ -12363,6 +12413,10 @@
       loadBuiltinProject();
       if (initialSongSlug) {
         bootCloudSongFromUrl(initialSongSlug);
+      } else if ("requestIdleCallback" in window) {
+        requestIdleCallback(() => { fetchCloudCatalog(); }, { timeout: 2500 });
+      } else {
+        setTimeout(() => { fetchCloudCatalog(); }, 1200);
       }
     })();
   </script>
