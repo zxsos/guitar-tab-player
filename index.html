@@ -1096,6 +1096,190 @@
       flex: none;
     }
 
+    /* Cloud Score Library Save Panel */
+    .lib-save-panel {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fafafa;
+      padding: 11px 12px;
+      margin-bottom: 12px;
+    }
+
+    .lib-save-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+
+    .lib-save-title {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .lib-config-btn {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--muted);
+      border-radius: 7px;
+      padding: 2px 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .lib-config-btn:hover {
+      color: var(--text);
+      background: #f4f4f5;
+    }
+
+    .lib-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .lib-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .lib-field input,
+    .lib-field select {
+      height: 32px;
+      padding: 0 9px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+      font-size: 12.5px;
+      font-family: inherit;
+      min-width: 0;
+    }
+
+    .lib-score-meta {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-bottom: 7px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lib-path-preview {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      color: var(--text);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 6px 8px;
+      margin-bottom: 8px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .lib-config-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding: 7px 8px;
+      border-radius: 8px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+    }
+
+    .lib-config-box input {
+      flex: 1;
+      min-width: 0;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      font-size: 11.5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--text);
+      background: #fafafa;
+    }
+
+    .lib-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .lib-auto-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .lib-action-btns {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .lib-btn-sm {
+      height: 30px;
+      padding: 0 11px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+    }
+
+    .lib-btn-sm:hover {
+      background: #f4f4f5;
+    }
+
+    .lib-btn-sm.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .lib-btn-sm.primary:hover {
+      filter: brightness(0.95);
+    }
+
+    .lib-btn-sm:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .lib-status {
+      margin-top: 8px;
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .lib-status.ok { color: var(--ok); }
+    .lib-status.warn { color: var(--warn); }
+    .lib-status.err { color: var(--err); }
+
+    .lib-status a {
+      color: var(--accent);
+      font-weight: 500;
+      text-decoration: underline;
+      margin-left: 4px;
+    }
+
     /* Calibration Form */
     .cal-form {
       display: flex;
@@ -1474,6 +1658,9 @@
         padding: 0 10px;
         font-size: 12px;
       }
+      .lib-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 480px) {
@@ -1505,6 +1692,11 @@
         <button type="button" class="pill-btn" id="import-btn">
           <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           导入
+        </button>
+
+        <button type="button" class="pill-btn hidden" id="topbar-save-lib-btn" title="保存源码到云端谱库">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          存谱到云端
         </button>
 
         <button type="button" class="icon-btn" id="open-pdf-btn" title="原版 PDF" aria-label="原版 PDF">
@@ -1724,10 +1916,60 @@
           <span class="val-left"><span class="val-ico muted" id="val-ico-pdf"></span>原版 PDF</span>
           <span class="val-detail" id="val-txt-pdf">-</span>
         </div>
+        <div class="val-row">
+          <span class="val-left"><span class="val-ico muted" id="val-ico-sourcepy"></span>源码 score_data.py</span>
+          <span class="val-detail" id="val-txt-sourcepy">-</span>
+        </div>
+      </div>
+
+      <div class="lib-save-panel hidden" id="lib-save-panel">
+        <div class="lib-save-head">
+          <span class="lib-save-title">保存到云端谱库（按歌手分类）</span>
+          <button type="button" class="lib-config-btn" id="lib-config-toggle">接口设置</button>
+        </div>
+        <div class="lib-grid">
+          <label class="lib-field">
+            歌手目录
+            <input type="text" id="lib-artist" maxlength="60" placeholder="例如：周杰伦 / 阿桑" />
+          </label>
+          <label class="lib-field">
+            曲目名称
+            <input type="text" id="lib-title" maxlength="60" placeholder="例如：一直很安静" />
+          </label>
+          <label class="lib-field">
+            难度档位
+            <select id="lib-tier">
+              <option value="beginner">新手</option>
+              <option value="standard" selected>标准</option>
+              <option value="advanced">进阶</option>
+            </select>
+          </label>
+          <label class="lib-field">
+            乐谱评分（0–100分）
+            <input type="number" id="lib-score" min="0" max="100" step="1" />
+          </label>
+        </div>
+        <div class="lib-score-meta" id="lib-score-breakdown">-</div>
+        <div class="lib-path-preview" id="lib-path-preview">-</div>
+        <div class="lib-config-box hidden" id="lib-config-box">
+          <input type="url" id="lib-worker-url" placeholder="填入已部署的 Worker 地址，例如 https://guitar-tab-library-worker.xxx.workers.dev" />
+          <button type="button" class="lib-btn-sm" id="lib-save-cfg-btn">保存地址</button>
+        </div>
+        <div class="lib-actions">
+          <label class="lib-auto-check">
+            <input type="checkbox" id="lib-auto-save" />
+            开始练习时自动保存
+          </label>
+          <div class="lib-action-btns">
+            <button type="button" class="lib-btn-sm" id="lib-download-py-btn">下载规范 .py</button>
+            <button type="button" class="lib-btn-sm primary" id="lib-submit-btn">立即保存到云端</button>
+          </div>
+        </div>
+        <div class="lib-status hidden" id="lib-status"></div>
       </div>
 
       <div class="import-footer">
-        <span class="import-privacy">本地校验与播放，不上传服务器</span>
+        <span class="import-privacy">音视频仅本地播放，确认后仅上传轻量 score_data.py 源码</span>
         <div class="import-footer-btns">
           <button type="button" class="btn-ghost" id="import-cancel-btn">取消</button>
           <button type="button" class="btn-primary" id="import-start-btn" disabled>开始练习</button>
@@ -8236,6 +8478,28 @@
       const valPanel = document.getElementById("val-panel");
       const importStartBtn = document.getElementById("import-start-btn");
 
+      const topbarSaveLibBtn = document.getElementById("topbar-save-lib-btn");
+      const libSavePanel = document.getElementById("lib-save-panel");
+      const libArtistInput = document.getElementById("lib-artist");
+      const libTitleInput = document.getElementById("lib-title");
+      const libTierSelect = document.getElementById("lib-tier");
+      const libScoreInput = document.getElementById("lib-score");
+      const libScoreBreakdownEl = document.getElementById("lib-score-breakdown");
+      const libPathPreviewEl = document.getElementById("lib-path-preview");
+      const libConfigToggleBtn = document.getElementById("lib-config-toggle");
+      const libConfigBox = document.getElementById("lib-config-box");
+      const libWorkerUrlInput = document.getElementById("lib-worker-url");
+      const libSaveCfgBtn = document.getElementById("lib-save-cfg-btn");
+      const libAutoSaveCheck = document.getElementById("lib-auto-save");
+      const libDownloadPyBtn = document.getElementById("lib-download-py-btn");
+      const libSubmitBtn = document.getElementById("lib-submit-btn");
+      const libStatusEl = document.getElementById("lib-status");
+
+      const DEFAULT_LIBRARY_WORKER_URL = "";
+      const LIBRARY_REPO_SLUG = "zxsos/guitar-tab-library";
+      const LIBRARY_WORKER_KEY = "gtp_library_worker_url";
+      const LIBRARY_TIER_LABELS = { beginner: "新手", standard: "标准", advanced: "进阶" };
+
       const pdfModal = document.getElementById("pdf-modal");
       const pdfIframe = document.getElementById("pdf-iframe");
       const pdfFilename = document.getElementById("pdf-filename");
@@ -8257,6 +8521,8 @@
       let activeObjectUrls = [];
       let activeDetection = null;
       let stagedReady = null;
+      let activeLibraryState = null;
+      const savedLibKeys = new Set();
       let activeTitle = "";
       let isImported = false;
       let hasStarted = false;
@@ -10524,6 +10790,9 @@
 
       async function inspectAndValidateFiles(rawFiles) {
         valPanel.classList.remove("hidden");
+        libSavePanel.classList.add("hidden");
+        libStatusEl.classList.add("hidden");
+        libStatusEl.innerHTML = "";
         stagedReady = null;
         importStartBtn.disabled = true;
 
@@ -10532,6 +10801,7 @@
         setValRow("pages", "muted", "等待检查");
         setValRow("manifest", "muted", "等待检查");
         setValRow("pdf", "muted", "等待检查");
+        setValRow("sourcepy", "muted", "等待检查");
 
         try {
           await runInspection(rawFiles);
@@ -10557,6 +10827,7 @@
             setValRow("pages", "err", "未解析");
             setValRow("manifest", "err", "未解析");
             setValRow("pdf", "muted", "未包含（可选）");
+            setValRow("sourcepy", "muted", "未包含");
             return;
           }
         } else {
@@ -10586,12 +10857,17 @@
         const scoreDataFile = files.find((f) => f.name === "score_data.py") || null;
         const buildPdfFile = files.find((f) => f.name === "build_pdf.py") || null;
         const pdfFile = files.find((f) => /\.pdf$/i.test(f.name)) || null;
+        const scoreDataText = scoreDataFile ? await scoreDataFile.text() : "";
 
         // PDF (optional)
         if (pdfFile) {
           setValRow("pdf", "ok", pdfFile.name);
         } else {
           setValRow("pdf", "muted", "未包含（可选）");
+        }
+
+        if (!scoreDataFile) {
+          setValRow("sourcepy", "muted", "未包含（仅本地播放）");
         }
 
         // Validate Audio
@@ -10635,6 +10911,9 @@
 
         if (!audioOk || !pagesOk) {
           setValRow("manifest", "err", "请先补全音频与预览 PNG");
+          if (scoreDataText) {
+            populateLibraryPanel(scoreDataText, null, Boolean(pdfFile), pngFiles.length);
+          }
           return;
         }
 
@@ -10658,6 +10937,9 @@
               "ok",
               "校验通过 · " + parsedManifest.systems.length + " 行 / " + parsedManifest.bars.length + " 小节" + noteSuffix
             );
+            const scoreAnalysis = scoreDataText
+              ? populateLibraryPanel(scoreDataText, parsedManifest, Boolean(pdfFile), pngFiles.length)
+              : null;
             stagedReady = {
               mode: "manifest",
               manifest: parsedManifest,
@@ -10665,6 +10947,8 @@
               audioFile,
               pngFiles,
               pdfFile,
+              scoreDataText,
+              scoreAnalysis,
               title: parsedManifest.title || audioBaseTitle
             };
             importStartBtn.disabled = false;
@@ -10676,7 +10960,7 @@
 
         setValRow("manifest", "spin", "未含清单，自动识谱中…");
         try {
-          const scoreMeta = scoreDataFile ? parseScoreDataPy(await scoreDataFile.text()) : null;
+          const scoreMeta = scoreDataText ? parseScoreDataPy(scoreDataText) : null;
           const phraseCues = buildPdfFile ? parsePhraseCuesPy(await buildPdfFile.text()) : {};
 
           const pageLayouts = [];
@@ -10724,6 +11008,9 @@
             "warn",
             "未含清单，已自动识谱（" + nSys + " 行 / " + nBars + " 小节，导入后可校准）"
           );
+          const scoreAnalysis = scoreDataText
+            ? populateLibraryPanel(scoreDataText, manifest, Boolean(pdfFile), pngFiles.length)
+            : null;
           stagedReady = {
             mode: "detected",
             manifest,
@@ -10731,6 +11018,8 @@
             audioFile,
             pngFiles,
             pdfFile,
+            scoreDataText,
+            scoreAnalysis,
             title: manifest.title
           };
           importStartBtn.disabled = false;
@@ -10741,7 +11030,7 @@
 
       importStartBtn.addEventListener("click", () => {
         if (!stagedReady) return;
-        const { mode, manifest, detection, audioFile, pngFiles, pdfFile, title } = stagedReady;
+        const { mode, manifest, detection, audioFile, pngFiles, pdfFile, scoreDataText, scoreAnalysis, title } = stagedReady;
 
         const ownedUrls = [];
         const audioUrl = URL.createObjectURL(audioFile);
@@ -10778,9 +11067,24 @@
 
         setMedia(audioUrl, pdfUrl, pdfFile ? pdfFile.name : "", audioFile.name);
         renderManifest(manifest, orderedPageUrls);
+        if (scoreDataText) {
+          activeLibraryState = {
+            code: scoreDataText,
+            analysis: scoreAnalysis || analyzeScorePython(scoreDataText, manifest, Boolean(pdfFile), pngFiles.length),
+            payload: collectLibraryFormPayload(scoreDataText, scoreAnalysis)
+          };
+          topbarSaveLibBtn.classList.remove("hidden");
+        } else {
+          activeLibraryState = null;
+          topbarSaveLibBtn.classList.add("hidden");
+        }
         closeImportModal();
         if (sheetPane) sheetPane.scrollTop = 0;
         window.scrollTo({ top: 0, behavior: "smooth" });
+
+        if (scoreDataText && libAutoSaveCheck.checked && getLibraryWorkerUrl()) {
+          submitScoreToLibrary(activeLibraryState.payload, { silentIfMissingConfig: true });
+        }
 
         if (mode === "detected") {
           showToast("已载入「" + title + "」", {
@@ -10880,6 +11184,375 @@
         }
         return cues;
       }
+
+      const LIB_OPEN_TUNING = { 6: 40, 5: 45, 4: 50, 3: 55, 2: 59, 1: 64 };
+
+      function sanitizeLibSegment(raw, fallback = "Untitled") {
+        let s = String(raw || "").trim();
+        if (!s || s.includes("..") || s.includes("/") || s.includes("\\")) {
+          s = s.replace(/[\\/]+/g, "_").replace(/\.\.+/g, "");
+        }
+        s = s
+          .replace(/[\u0000-\u001f\u007f]/g, "")
+          .replace(/[:*?"<>|]/g, "_")
+          .replace(/\s+/g, "_")
+          .replace(/^[._-]+|[._-]+$/g, "");
+        if (s.length > 60) {
+          s = s.slice(0, 60).replace(/[._-]+$/g, "");
+        }
+        return s || fallback;
+      }
+
+      function buildLibraryTargetPath(artist, title, tier, score) {
+        const safeArtist = sanitizeLibSegment(artist, "未分类");
+        const safeTitle = sanitizeLibSegment(title, "Untitled");
+        const tierLabel = LIBRARY_TIER_LABELS[tier] || "标准";
+        const intScore = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
+        return "scores/" + safeArtist + "/" + safeTitle + "_" + tierLabel + "_" + intScore + "分.py";
+      }
+
+      function analyzeScorePython(pyText, manifestObj, hasPdf, pngCount) {
+        const meta = parseScoreDataPy(pyText);
+        const strMatch = (k) => {
+          const m = pyText.match(new RegExp("^" + k + "\\s*=\\s*[\"']([^\"']+)[\"']", "m"));
+          return m ? m[1].trim() : "";
+        };
+
+        let rawArtist = strMatch("ARTIST") || meta.composer || (manifestObj && manifestObj.composer) || "";
+        rawArtist = rawArtist.replace(/\s*[（(][^()（）]+[)）]\s*$/, "").trim();
+        const artist = rawArtist && !/^unknown$/i.test(rawArtist) ? rawArtist : "未分类";
+        const title = meta.title || (manifestObj && manifestObj.title) || "Untitled";
+        const capo = meta.capo !== null && Number.isFinite(meta.capo)
+          ? meta.capo
+          : (manifestObj && Number.isFinite(manifestObj.capo) ? manifestObj.capo : 0);
+        const bpm = meta.bpm || (manifestObj && manifestObj.bpm) || 72;
+
+        // Inspect Python notes/techniques directly for tier inference & metrics
+        const noteRe = /\bn\(\s*([1-6])\s*,\s*(\d+)(?:\s*,\s*["']([^"']+)["'])?([^)]*)\)/g;
+        let maxFret = 0;
+        let melCount = 0;
+        let bassCount = 0;
+        let innerCount = 0;
+        let slapCount = 0;
+        let harmCount = 0;
+        let pmCount = 0;
+        let graceCount = 0;
+        let nm;
+        while ((nm = noteRe.exec(pyText)) !== null) {
+          const fret = parseInt(nm[2], 10);
+          const role = nm[3] || "melody";
+          const opts = nm[4] || "";
+          const isHarm = /\bharmonic\s*=\s*True\b/.test(opts);
+          if (!isHarm && role !== "slap" && fret > maxFret) maxFret = fret;
+          if (role === "melody") melCount++;
+          else if (role === "bass") bassCount++;
+          else if (role === "inner") innerCount++;
+          else if (role === "slap") slapCount++;
+          if (isHarm) harmCount++;
+          if (/\bpalm_mute\s*=\s*True\b/.test(opts)) pmCount++;
+          if (/\bgrace_from\s*=/.test(opts)) graceCount++;
+        }
+
+        const linkMatches = pyText.match(/\blink_tech\s*=\s*["'][HPS]["']/g) || [];
+        const arpMatches = pyText.match(/\barpeggio\s*=\s*True\b/g) || [];
+        const has16th = /\bev\(\s*\d+\s*,\s*1\b/.test(pyText);
+        const techVariety = [
+          linkMatches.length > 0,
+          arpMatches.length > 0,
+          harmCount > 0,
+          pmCount > 0,
+          slapCount > 0,
+          graceCount > 0
+        ].filter(Boolean).length;
+
+        const explicitTier = strMatch("TIER").toLowerCase();
+        let tier = ["beginner", "standard", "advanced"].includes(explicitTier) ? explicitTier : "";
+        if (!tier) {
+          if (maxFret > 12) {
+            tier = "advanced";
+          } else if (has16th || techVariety >= 1 || maxFret > 7) {
+            tier = "standard";
+          } else {
+            tier = "beginner";
+          }
+        }
+
+        // Compute voice crossings from manifest notes (if MIDI-derived) or sequential py measures
+        const barEntries = Object.entries(meta.parsedBars);
+        const barCount = Math.max(barEntries.length, (manifestObj && Array.isArray(manifestObj.bars)) ? manifestObj.bars.length : 0);
+        const lastBar = barEntries.length ? Math.max(...barEntries.map(([b]) => parseInt(b, 10))) : Math.max(0, barCount - 1);
+        let crossings = 0;
+
+        if (manifestObj && Array.isArray(manifestObj.notes) && manifestObj.notes.length) {
+          let activeMel = null;
+          const byTime = new Map();
+          for (const nt of manifestObj.notes) {
+            const key = nt.b + "@" + Number(nt.t).toFixed(3);
+            if (!byTime.has(key)) byTime.set(key, { bar: nt.b, list: [] });
+            byTime.get(key).list.push(nt);
+          }
+          for (const group of byTime.values()) {
+            const mels = group.list.filter((x) => x.r === "m");
+            if (mels.length) {
+              if (mels.some((x) => x.h)) activeMel = null;
+              else activeMel = Math.max(...mels.map((x) => LIB_OPEN_TUNING[x.s] + capo + x.f));
+            }
+            if (group.bar < lastBar && activeMel !== null) {
+              for (const x of group.list) {
+                if ((x.r === "b" || x.r === "i") && !x.h) {
+                  const cm = LIB_OPEN_TUNING[x.s] + capo + x.f;
+                  if (cm > activeMel) crossings++;
+                }
+              }
+            }
+          }
+        }
+
+        // 1. Structure & completeness (0..30)
+        let structure = 0;
+        structure += barCount >= 16 ? 14 : (barCount >= 8 ? 11 : (barCount >= 4 ? 8 : 4));
+        if (meta.title) structure += 3;
+        if (strMatch("ARTIST") || meta.composer) structure += 3;
+        if (meta.bpm) structure += 3;
+        if (meta.capo !== null) structure += 2;
+        const barsWithChords = barEntries.filter(([, v]) => Boolean(v.chords)).length;
+        const chordRatio = barEntries.length ? barsWithChords / barEntries.length : 0;
+        structure += chordRatio >= 0.7 ? 5 : (chordRatio >= 0.3 ? 3 : (chordRatio > 0 ? 2 : 0));
+
+        // 2. Voicing & playability (0..30)
+        let voicing = 0;
+        voicing += crossings === 0 ? 18 : (crossings <= 2 ? 12 : Math.max(0, 14 - crossings * 2));
+        const tierFretCap = tier === "beginner" ? 7 : (tier === "standard" ? 12 : 15);
+        voicing += maxFret <= tierFretCap ? 12 : Math.max(4, 12 - (maxFret - tierFretCap) * 2);
+
+        // 3. Arrangement detail (0..25)
+        let arrangement = 0;
+        if (melCount > 0 && bassCount > 0) arrangement += 8;
+        else if (melCount > 0) arrangement += 4;
+        if (tier === "beginner") {
+          arrangement += 4;
+          arrangement += techVariety <= 1 ? 7 : 4;
+        } else {
+          arrangement += innerCount > 0 ? 4 : 2;
+          arrangement += techVariety >= 3 ? 7 : (techVariety >= 1 ? 5 : 2);
+        }
+        const landmarkMatch = pyText.match(/LANDMARKS[^=]*=\s*\{([^}]*)\}/s);
+        const hasLandmarks = Boolean(landmarkMatch && /\d+\s*:\s*\[/.test(landmarkMatch[1]));
+        arrangement += hasLandmarks ? 6 : (barCount >= 12 ? 2 : 0);
+
+        // 4. Deliverable bundle fidelity (0..15)
+        let bundle = 0;
+        if (manifestObj && Array.isArray(manifestObj.notes) && manifestObj.notes.length) bundle += 9;
+        else if (manifestObj && Array.isArray(manifestObj.bars) && manifestObj.bars.length) bundle += 4;
+        if (hasPdf) bundle += 3;
+        if (pngCount > 0) bundle += 3;
+
+        const score = Math.max(0, Math.min(100, structure + voicing + arrangement + bundle));
+        const totalNotes = (manifestObj && Array.isArray(manifestObj.notes) && manifestObj.notes.length)
+          ? manifestObj.notes.length
+          : (melCount + bassCount + innerCount + slapCount);
+
+        return {
+          artist,
+          title,
+          tier,
+          score,
+          breakdown: { structure, voicing, arrangement, bundle },
+          bpm,
+          capo,
+          bars: barCount,
+          notes: totalNotes,
+          maxFret,
+          crossings
+        };
+      }
+
+      function getLibraryWorkerUrl() {
+        try {
+          const saved = localStorage.getItem(LIBRARY_WORKER_KEY);
+          if (saved && /^https?:\/\//i.test(saved.trim())) return saved.trim().replace(/\/+$/, "");
+        } catch {
+          // Ignore storage restrictions
+        }
+        return DEFAULT_LIBRARY_WORKER_URL ? DEFAULT_LIBRARY_WORKER_URL.replace(/\/+$/, "") : "";
+      }
+
+      function updateLibPathPreview() {
+        const p = buildLibraryTargetPath(
+          libArtistInput.value,
+          libTitleInput.value,
+          libTierSelect.value,
+          libScoreInput.value
+        );
+        libPathPreviewEl.textContent = "目标路径：" + LIBRARY_REPO_SLUG + "/" + p;
+      }
+
+      function setLibStatus(status, text, linkUrl, linkText) {
+        libStatusEl.className = "lib-status " + (status || "");
+        libStatusEl.textContent = text;
+        if (linkUrl && /^https:\/\//.test(linkUrl)) {
+          const a = document.createElement("a");
+          a.href = linkUrl;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.textContent = linkText || "在 GitHub 查看";
+          libStatusEl.appendChild(a);
+        }
+        libStatusEl.classList.remove("hidden");
+      }
+
+      function populateLibraryPanel(pyText, manifestObj, hasPdf, pngCount) {
+        const a = analyzeScorePython(pyText, manifestObj, hasPdf, pngCount);
+        setValRow("sourcepy", "ok", "score_data.py · 建议 " + a.score + " 分（" + (LIBRARY_TIER_LABELS[a.tier] || a.tier) + "）");
+        libArtistInput.value = a.artist;
+        libTitleInput.value = a.title;
+        libTierSelect.value = a.tier;
+        libScoreInput.value = String(a.score);
+        libScoreBreakdownEl.textContent =
+          "自动评分 " + a.score + " 分 — 结构 " + a.breakdown.structure + "/30 · 声部 " + a.breakdown.voicing +
+          "/30 · 编配 " + a.breakdown.arrangement + "/25 · 完整包 " + a.breakdown.bundle + "/15" +
+          (a.crossings > 0 ? ("（检测到 " + a.crossings + " 处声部交叉）") : "（0 声部交叉）");
+        libWorkerUrlInput.value = getLibraryWorkerUrl();
+        updateLibPathPreview();
+        libSavePanel.classList.remove("hidden");
+        return a;
+      }
+
+      function collectLibraryFormPayload(pyText, analysis) {
+        const a = analysis || {};
+        const scoreVal = Math.max(0, Math.min(100, Math.round(Number(libScoreInput.value) || a.score || 80)));
+        return {
+          artist: libArtistInput.value.trim() || a.artist || "未分类",
+          title: libTitleInput.value.trim() || a.title || "Untitled",
+          tier: libTierSelect.value || a.tier || "standard",
+          score: scoreVal,
+          autoScore: a.score || scoreVal,
+          bpm: a.bpm || 0,
+          capo: a.capo || 0,
+          bars: a.bars || 0,
+          notes: a.notes || 0,
+          code: pyText,
+        };
+      }
+
+      async function submitScoreToLibrary(payload, { silentIfMissingConfig = false } = {}) {
+        const workerUrl = getLibraryWorkerUrl();
+        if (!workerUrl) {
+          if (!silentIfMissingConfig) {
+            libConfigBox.classList.remove("hidden");
+            setLibStatus("warn", "尚未填写 Cloudflare Worker 地址：点击上方填入一次即可自动存库，或先点「下载规范 .py」。");
+          }
+          return;
+        }
+        const dedupKey = [payload.artist, payload.title, payload.tier, payload.score, payload.code.length].join("|");
+        if (silentIfMissingConfig && savedLibKeys.has(dedupKey)) return;
+
+        libSubmitBtn.disabled = true;
+        setLibStatus("warn", "正在保存至 GitHub 谱库…");
+        try {
+          const resp = await fetch(workerUrl + "/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok || !data.ok) {
+            throw new Error(data.error || ("HTTP " + resp.status));
+          }
+          savedLibKeys.add(dedupKey);
+          if (data.status === "duplicate") {
+            setLibStatus("ok", "云端谱库已收录相同源码：", data.htmlUrl, "查看文件");
+            showToast("云端谱库已有相同源码");
+          } else if (data.status === "pr_created") {
+            setLibStatus("ok", "已提交谱库 PR（" + data.path + "）：", data.prUrl || data.htmlUrl, "查看 PR");
+            showToast("已提交至云端谱库 PR");
+          } else {
+            setLibStatus("ok", "已按歌手保存至 " + data.path + "：", data.htmlUrl, "在 GitHub 打开");
+            showToast("已保存「" + payload.artist + "/" + payload.title + "」至云端谱库");
+          }
+        } catch (err) {
+          const msg = err && err.message ? err.message : "网络请求失败";
+          setLibStatus("err", "保存失败：" + msg);
+          showToast("云端存库失败：" + msg, { error: true });
+        } finally {
+          libSubmitBtn.disabled = false;
+        }
+      }
+
+      function downloadNormalizedPy(payload) {
+        const relPath = buildLibraryTargetPath(payload.artist, payload.title, payload.tier, payload.score);
+        const fname = relPath.split("/").pop();
+        const blob = new Blob([payload.code], { type: "text/x-python;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setLibStatus("ok", "已按规范命名导出：" + relPath + "（可在谱库 GitHub 直接上传至该目录）");
+      }
+
+      [libArtistInput, libTitleInput, libTierSelect, libScoreInput].forEach((el) => {
+        el.addEventListener("input", updateLibPathPreview);
+        el.addEventListener("change", updateLibPathPreview);
+      });
+
+      libConfigToggleBtn.addEventListener("click", () => {
+        libConfigBox.classList.toggle("hidden");
+        if (!libConfigBox.classList.contains("hidden")) {
+          libWorkerUrlInput.value = getLibraryWorkerUrl();
+          libWorkerUrlInput.focus();
+        }
+      });
+
+      libSaveCfgBtn.addEventListener("click", () => {
+        const raw = libWorkerUrlInput.value.trim().replace(/\/+$/, "");
+        if (raw && !/^https?:\/\//i.test(raw)) {
+          setLibStatus("err", "Worker 地址必须以 https:// 或 http:// 开头");
+          return;
+        }
+        try {
+          if (raw) localStorage.setItem(LIBRARY_WORKER_KEY, raw);
+          else localStorage.removeItem(LIBRARY_WORKER_KEY);
+        } catch {
+          // Ignore
+        }
+        libConfigBox.classList.add("hidden");
+        setLibStatus(raw ? "ok" : "warn", raw ? "已保存 Worker 接口地址，现在可以点击「立即保存到云端」。" : "已清除本地 Worker 地址。");
+      });
+
+      libDownloadPyBtn.addEventListener("click", () => {
+        const code = (stagedReady && stagedReady.scoreDataText) || (activeLibraryState && activeLibraryState.code) || "";
+        const analysis = (stagedReady && stagedReady.scoreAnalysis) || (activeLibraryState && activeLibraryState.analysis) || {};
+        if (!code) return;
+        downloadNormalizedPy(collectLibraryFormPayload(code, analysis));
+      });
+
+      libSubmitBtn.addEventListener("click", () => {
+        const code = (stagedReady && stagedReady.scoreDataText) || (activeLibraryState && activeLibraryState.code) || "";
+        const analysis = (stagedReady && stagedReady.scoreAnalysis) || (activeLibraryState && activeLibraryState.analysis) || {};
+        if (!code) return;
+        const payload = collectLibraryFormPayload(code, analysis);
+        if (activeLibraryState && (!stagedReady || !stagedReady.scoreDataText)) {
+          activeLibraryState.payload = payload;
+        }
+        submitScoreToLibrary(payload);
+      });
+
+      topbarSaveLibBtn.addEventListener("click", () => {
+        if (!activeLibraryState) return;
+        valPanel.classList.remove("hidden");
+        populateLibraryPanel(
+          activeLibraryState.code,
+          activeManifest,
+          Boolean(pdfIframe.dataset.src),
+          activePageUrls.length
+        );
+        openImportModal();
+        setTimeout(() => libSavePanel.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+      });
 
       function probeAudioFileDuration(audioFile) {
         return new Promise((resolve) => {
@@ -11263,6 +11936,8 @@
       function loadBuiltinProject() {
         revokeImportedUrls();
         activeDetection = null;
+        activeLibraryState = null;
+        topbarSaveLibBtn.classList.add("hidden");
         isImported = false;
         hasStarted = false;
         followPaused = false;
