@@ -1183,28 +1183,10 @@
       white-space: nowrap;
     }
 
-    .lib-config-box {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
-      padding: 7px 8px;
-      border-radius: 8px;
-      background: var(--paper);
-      border: 1px solid var(--line);
-    }
-
-    .lib-config-box input {
-      flex: 1;
-      min-width: 0;
-      height: 28px;
-      padding: 0 8px;
-      border-radius: 6px;
-      border: 1px solid var(--line);
+    .lib-pr-hint {
       font-size: 11.5px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      color: var(--text);
-      background: #fafafa;
+      color: var(--muted);
+      line-height: 1.4;
     }
 
     .lib-actions {
@@ -1215,15 +1197,6 @@
       gap: 8px;
     }
 
-    .lib-auto-check {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
-      color: var(--text);
-      cursor: pointer;
-    }
-
     .lib-action-btns {
       display: flex;
       align-items: center;
@@ -1232,6 +1205,9 @@
     }
 
     .lib-btn-sm {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       height: 30px;
       padding: 0 11px;
       border-radius: 8px;
@@ -1241,6 +1217,8 @@
       border: 1px solid var(--line);
       background: var(--paper);
       color: var(--text);
+      text-decoration: none;
+      white-space: nowrap;
     }
 
     .lib-btn-sm:hover {
@@ -1278,6 +1256,173 @@
       font-weight: 500;
       text-decoration: underline;
       margin-left: 4px;
+    }
+
+    /* Cloud Score Library Modal */
+    .modal-card.library-card {
+      width: min(640px, 100%);
+    }
+
+    .lib-search-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .lib-search-row input {
+      flex: 1;
+      min-width: 0;
+      height: 34px;
+      padding: 0 11px;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .lib-modal-meta {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lib-catalog-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 54vh;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .lib-group {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fafafa;
+      overflow: hidden;
+    }
+
+    .lib-group-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #f4f4f5;
+      border-bottom: 1px solid var(--line);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .lib-group-count {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .lib-song-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .lib-song-row:last-child {
+      border-bottom: 0;
+    }
+
+    .lib-song-row.active {
+      background: var(--accent-soft);
+    }
+
+    .lib-song-main {
+      min-width: 0;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .lib-song-top {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .lib-song-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .lib-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      background: #f4f4f5;
+      color: var(--text);
+    }
+
+    .lib-badge.score {
+      border-color: rgba(22, 163, 74, 0.25);
+      background: rgba(22, 163, 74, 0.08);
+      color: var(--ok);
+    }
+
+    .lib-song-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lib-song-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: none;
+    }
+
+    .lib-empty {
+      padding: 24px 12px;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+
+    .lib-modal-foot {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .lib-modal-foot a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .lib-modal-foot a:hover {
+      text-decoration: underline;
     }
 
     /* Calibration Form */
@@ -1689,14 +1834,19 @@
           弹奏演示
         </button>
 
+        <button type="button" class="pill-btn" id="library-btn" title="浏览在线指弹曲库（按歌手分类）">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M9 10h6"/><path d="M9 14h4"/></svg>
+          在线曲库
+        </button>
+
         <button type="button" class="pill-btn" id="import-btn">
           <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           导入
         </button>
 
-        <button type="button" class="pill-btn hidden" id="topbar-save-lib-btn" title="保存源码到云端谱库">
+        <button type="button" class="pill-btn hidden" id="topbar-save-lib-btn" title="复制规范源码并去 GitHub 提 PR">
           <svg class="ico" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          存谱到云端
+          提交到谱库 (PR)
         </button>
 
         <button type="button" class="icon-btn" id="open-pdf-btn" title="原版 PDF" aria-label="原版 PDF">
@@ -1925,7 +2075,7 @@
       <div class="lib-save-panel hidden" id="lib-save-panel">
         <div class="lib-save-head">
           <span class="lib-save-title">保存到云端谱库（按歌手分类）</span>
-          <button type="button" class="lib-config-btn" id="lib-config-toggle">接口设置</button>
+          <span class="lib-group-count">GitHub PR 自动编译</span>
         </div>
         <div class="lib-grid">
           <label class="lib-field">
@@ -1951,29 +2101,44 @@
         </div>
         <div class="lib-score-meta" id="lib-score-breakdown">-</div>
         <div class="lib-path-preview" id="lib-path-preview">-</div>
-        <div class="lib-config-box hidden" id="lib-config-box">
-          <input type="url" id="lib-worker-url" placeholder="填入已部署的 Worker 地址，例如 https://guitar-tab-library-worker.xxx.workers.dev" />
-          <button type="button" class="lib-btn-sm" id="lib-save-cfg-btn">保存地址</button>
-        </div>
         <div class="lib-actions">
-          <label class="lib-auto-check">
-            <input type="checkbox" id="lib-auto-save" checked />
-            开始练习时自动保存
-          </label>
+          <span class="lib-pr-hint">提 PR 后由 GitHub Actions 自动质检并编译上架</span>
           <div class="lib-action-btns">
             <button type="button" class="lib-btn-sm" id="lib-download-py-btn">下载规范 .py</button>
-            <button type="button" class="lib-btn-sm primary" id="lib-submit-btn">立即保存到云端</button>
+            <button type="button" class="lib-btn-sm primary" id="lib-pr-btn">复制源码并去 GitHub 提 PR</button>
           </div>
         </div>
         <div class="lib-status hidden" id="lib-status"></div>
       </div>
 
       <div class="import-footer">
-        <span class="import-privacy">音视频仅本地播放，确认后仅上传轻量 score_data.py 源码</span>
+        <span class="import-privacy">音视频仅在浏览器本地播放；如需保存源码至曲库，点击上方按钮复制去 GitHub 提 PR</span>
         <div class="import-footer-btns">
           <button type="button" class="btn-ghost" id="import-cancel-btn">取消</button>
           <button type="button" class="btn-primary" id="import-start-btn" disabled>开始练习</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloud Score Library Modal -->
+  <div class="modal-backdrop" id="library-modal" role="dialog" aria-modal="true" aria-label="在线指弹曲库">
+    <div class="modal-card library-card">
+      <div class="modal-head">
+        <h2 class="modal-title">在线指弹曲库（按歌手分类）</h2>
+        <button type="button" class="icon-btn" id="close-library-btn" title="关闭" aria-label="关闭">
+          <svg class="ico" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="lib-search-row">
+        <input type="search" id="lib-search-input" placeholder="搜索歌手、曲名或难度（新手 / 标准 / 进阶）…" />
+        <button type="button" class="lib-btn-sm" id="lib-refresh-btn">刷新</button>
+      </div>
+      <div class="lib-modal-meta" id="lib-modal-meta">正在读取云端曲库…</div>
+      <div class="lib-catalog-list" id="lib-catalog-list"></div>
+      <div class="lib-modal-foot">
+        <a href="https://github.com/zxsos/guitar-tab-library" target="_blank" rel="noopener">GitHub 源码库</a>
+        <span>合并 PR 后自动编译上架 · 访客免账号直连播放</span>
       </div>
     </div>
   </div>
@@ -8478,6 +8643,14 @@
       const valPanel = document.getElementById("val-panel");
       const importStartBtn = document.getElementById("import-start-btn");
 
+      const libraryBtn = document.getElementById("library-btn");
+      const libraryModal = document.getElementById("library-modal");
+      const closeLibraryBtn = document.getElementById("close-library-btn");
+      const libSearchInput = document.getElementById("lib-search-input");
+      const libRefreshBtn = document.getElementById("lib-refresh-btn");
+      const libModalMeta = document.getElementById("lib-modal-meta");
+      const libCatalogList = document.getElementById("lib-catalog-list");
+
       const topbarSaveLibBtn = document.getElementById("topbar-save-lib-btn");
       const libSavePanel = document.getElementById("lib-save-panel");
       const libArtistInput = document.getElementById("lib-artist");
@@ -8486,18 +8659,16 @@
       const libScoreInput = document.getElementById("lib-score");
       const libScoreBreakdownEl = document.getElementById("lib-score-breakdown");
       const libPathPreviewEl = document.getElementById("lib-path-preview");
-      const libConfigToggleBtn = document.getElementById("lib-config-toggle");
-      const libConfigBox = document.getElementById("lib-config-box");
-      const libWorkerUrlInput = document.getElementById("lib-worker-url");
-      const libSaveCfgBtn = document.getElementById("lib-save-cfg-btn");
-      const libAutoSaveCheck = document.getElementById("lib-auto-save");
       const libDownloadPyBtn = document.getElementById("lib-download-py-btn");
-      const libSubmitBtn = document.getElementById("lib-submit-btn");
+      const libPrBtn = document.getElementById("lib-pr-btn");
       const libStatusEl = document.getElementById("lib-status");
 
-      const DEFAULT_LIBRARY_WORKER_URL = "https://guitar-tab-library-worker.zcsos.workers.dev";
+      const LIBRARY_SITE_BASE = (location.hostname === "zxsos.github.io")
+        ? "/guitar-tab-library/"
+        : "https://zxsos.github.io/guitar-tab-library/";
+      const LIBRARY_CATALOG_URL = LIBRARY_SITE_BASE + "catalog.json";
+      const LIBRARY_RAW_INDEX_URL = "https://raw.githubusercontent.com/zxsos/guitar-tab-library/main/index.json";
       const LIBRARY_REPO_SLUG = "zxsos/guitar-tab-library";
-      const LIBRARY_WORKER_KEY = "gtp_library_worker_url";
       const LIBRARY_TIER_LABELS = { beginner: "新手", standard: "标准", advanced: "进阶" };
 
       const pdfModal = document.getElementById("pdf-modal");
@@ -8522,7 +8693,9 @@
       let activeDetection = null;
       let stagedReady = null;
       let activeLibraryState = null;
-      const savedLibKeys = new Set();
+      let activeCloudSlug = "";
+      let cloudCatalogCache = null;
+      let cloudCatalogFetchedAt = 0;
       let activeTitle = "";
       let isImported = false;
       let hasStarted = false;
@@ -8705,7 +8878,7 @@
         document.title = title + " · 指弹六线谱";
         if (manifest.audio) menuDlMp3.download = manifest.audio;
         barLocalChip.classList.toggle("hidden", !isImported);
-        menuResetBuiltin.classList.toggle("hidden", !isImported);
+        menuResetBuiltin.classList.toggle("hidden", !isImported && !activeCloudSlug);
         menuCalibrate.classList.toggle("hidden", !activeDetection);
 
         // Scrubber section markers
@@ -10136,6 +10309,7 @@
         closePopovers();
         pdfModal.classList.remove("open");
         calModal.classList.remove("open");
+        libraryModal.classList.remove("open");
         importModal.classList.add("open");
       }
 
@@ -10231,7 +10405,7 @@
 
       menuResetBuiltin.addEventListener("click", () => {
         closePopovers();
-        loadBuiltinProject();
+        loadBuiltinProject({ clearQuery: true });
         showToast("已恢复示例曲目", { duration: 2500 });
       });
 
@@ -10572,6 +10746,7 @@
         if (e.key === "Escape") {
           closePopovers();
           closeImportModal();
+          closeLibraryModal();
           pdfModal.classList.remove("open");
           calModal.classList.remove("open");
           return;
@@ -10581,6 +10756,7 @@
           ["INPUT", "TEXTAREA", "SELECT"].includes(tag) ||
           (e.target && e.target.isContentEditable) ||
           importModal.classList.contains("open") ||
+          libraryModal.classList.contains("open") ||
           pdfModal.classList.contains("open") ||
           calModal.classList.contains("open") ||
           moreMenu.classList.contains("open");
@@ -11060,6 +11236,8 @@
         revokeImportedUrls();
         activeObjectUrls = ownedUrls;
         activeDetection = detection;
+        activeCloudSlug = "";
+        updateUrlSongSlug("");
         isImported = true;
         hasStarted = false;
         followPaused = false;
@@ -11081,10 +11259,6 @@
         closeImportModal();
         if (sheetPane) sheetPane.scrollTop = 0;
         window.scrollTo({ top: 0, behavior: "smooth" });
-
-        if (scoreDataText && libAutoSaveCheck.checked && getLibraryWorkerUrl()) {
-          submitScoreToLibrary(activeLibraryState.payload, { silentIfMissingConfig: true });
-        }
 
         if (mode === "detected") {
           showToast("已载入「" + title + "」", {
@@ -11367,14 +11541,84 @@
         };
       }
 
-      function getLibraryWorkerUrl() {
+      function encodePathSegments(relPath) {
+        return String(relPath || "")
+          .split("/")
+          .filter(Boolean)
+          .map((seg) => encodeURIComponent(seg))
+          .join("/");
+      }
+
+      function normalizeScorePyForHash(code) {
+        return String(code ?? "").replace(/\r\n/g, "\n").trimEnd() + "\n";
+      }
+
+      async function sha256HexClient(text) {
+        if (!window.crypto || !window.crypto.subtle) return "";
+        const digest = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+        return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+      }
+
+      function updateUrlSongSlug(slug) {
         try {
-          const saved = localStorage.getItem(LIBRARY_WORKER_KEY);
-          if (saved && /^https?:\/\//i.test(saved.trim())) return saved.trim().replace(/\/+$/, "");
+          if (!/^https?:$/i.test(location.protocol)) return;
+          const u = new URL(location.href);
+          if (slug) u.searchParams.set("song", slug);
+          else u.searchParams.delete("song");
+          history.replaceState(null, "", u.pathname + u.search + u.hash);
         } catch {
-          // Ignore storage restrictions
+          // Ignore restricted URL environments
         }
-        return DEFAULT_LIBRARY_WORKER_URL ? DEFAULT_LIBRARY_WORKER_URL.replace(/\/+$/, "") : "";
+      }
+
+      async function fetchCloudCatalog({ force = false, allowRawFallback = false } = {}) {
+        const now = Date.now();
+        if (!force && cloudCatalogCache && now - cloudCatalogFetchedAt < 60_000) {
+          return cloudCatalogCache;
+        }
+        try {
+          const resp = await fetch(LIBRARY_CATALOG_URL, { cache: force ? "reload" : "no-cache" });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data && Array.isArray(data.items)) {
+              cloudCatalogCache = data;
+              cloudCatalogFetchedAt = Date.now();
+              return data;
+            }
+          }
+        } catch {
+          // Fallback optionally below
+        }
+        if (allowRawFallback) {
+          try {
+            const r2 = await fetch(LIBRARY_RAW_INDEX_URL, { cache: force ? "reload" : "no-cache" });
+            if (r2.ok) {
+              const d2 = await r2.json();
+              if (d2 && Array.isArray(d2.items)) {
+                return d2;
+              }
+            }
+          } catch {
+            // Ignore offline errors
+          }
+        }
+        return null;
+      }
+
+      async function findDuplicateInCatalog(payload, catalog) {
+        if (!catalog || !Array.isArray(catalog.items) || !payload || !payload.code) return null;
+        const normCode = normalizeScorePyForHash(payload.code);
+        const hash = await sha256HexClient(normCode);
+        if (!hash) return null;
+        const safeArtist = sanitizeLibSegment(payload.artist, "未分类");
+        const safeTitle = sanitizeLibSegment(payload.title, "Untitled");
+        return catalog.items.find(
+          (it) =>
+            it.sha256 === hash &&
+            it.artist === safeArtist &&
+            it.title === safeTitle &&
+            it.tier === payload.tier
+        ) || null;
       }
 
       function updateLibPathPreview() {
@@ -11401,6 +11645,23 @@
         libStatusEl.classList.remove("hidden");
       }
 
+      let libDedupRunSeq = 0;
+      async function runPreDedupHint(pyText, analysis) {
+        const seq = ++libDedupRunSeq;
+        if (!pyText) return;
+        const cat = await fetchCloudCatalog({ allowRawFallback: true });
+        if (seq !== libDedupRunSeq || !cat) return;
+        const payload = collectLibraryFormPayload(pyText, analysis);
+        const dup = await findDuplicateInCatalog(payload, cat);
+        if (seq !== libDedupRunSeq) return;
+        if (dup) {
+          const url = dup.githubUrl || ("https://github.com/" + LIBRARY_REPO_SLUG + "/blob/main/" + encodePathSegments(dup.path));
+          setLibStatus("ok", "云端谱库已收录相同源码（无需重复提 PR）：", url, "查看谱库文件");
+        } else {
+          libStatusEl.classList.add("hidden");
+        }
+      }
+
       function populateLibraryPanel(pyText, manifestObj, hasPdf, pngCount) {
         const a = analyzeScorePython(pyText, manifestObj, hasPdf, pngCount);
         setValRow("sourcepy", "ok", "score_data.py · 建议 " + a.score + " 分（" + (LIBRARY_TIER_LABELS[a.tier] || a.tier) + "）");
@@ -11412,9 +11673,9 @@
           "自动评分 " + a.score + " 分 — 结构 " + a.breakdown.structure + "/30 · 声部 " + a.breakdown.voicing +
           "/30 · 编配 " + a.breakdown.arrangement + "/25 · 完整包 " + a.breakdown.bundle + "/15" +
           (a.crossings > 0 ? ("（检测到 " + a.crossings + " 处声部交叉）") : "（0 声部交叉）");
-        libWorkerUrlInput.value = getLibraryWorkerUrl();
         updateLibPathPreview();
         libSavePanel.classList.remove("hidden");
+        runPreDedupHint(pyText, a);
         return a;
       }
 
@@ -11435,54 +11696,78 @@
         };
       }
 
-      async function submitScoreToLibrary(payload, { silentIfMissingConfig = false } = {}) {
-        const workerUrl = getLibraryWorkerUrl();
-        if (!workerUrl) {
-          if (!silentIfMissingConfig) {
-            libConfigBox.classList.remove("hidden");
-            setLibStatus("warn", "尚未填写 Cloudflare Worker 地址：点击上方填入一次即可自动存库，或先点「下载规范 .py」。");
+      async function copyTextSafe(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch {
+            // Fall back to textarea copy below
           }
+        }
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand("copy");
+          ta.remove();
+          return Boolean(ok);
+        } catch {
+          return false;
+        }
+      }
+
+      async function copySourceAndOpenGitHubPR(payload) {
+        const normCode = normalizeScorePyForHash(payload.code);
+        const relPath = buildLibraryTargetPath(payload.artist, payload.title, payload.tier, payload.score);
+        const cat = await fetchCloudCatalog({ allowRawFallback: true });
+        const dup = await findDuplicateInCatalog(payload, cat);
+        if (dup) {
+          const dupUrl = dup.githubUrl || ("https://github.com/" + LIBRARY_REPO_SLUG + "/blob/main/" + encodePathSegments(dup.path));
+          setLibStatus("ok", "云端谱库已收录相同源码，无需重复提 PR：", dupUrl, "查看谱库文件");
+          showToast("云端谱库已有相同源码");
           return;
         }
-        const dedupKey = [payload.artist, payload.title, payload.tier, payload.score, payload.code.length].join("|");
-        if (silentIfMissingConfig && savedLibKeys.has(dedupKey)) return;
 
-        libSubmitBtn.disabled = true;
-        setLibStatus("warn", "正在保存至 GitHub 谱库…");
-        try {
-          const resp = await fetch(workerUrl + "/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          const data = await resp.json().catch(() => ({}));
-          if (!resp.ok || !data.ok) {
-            throw new Error(data.error || ("HTTP " + resp.status));
-          }
-          savedLibKeys.add(dedupKey);
-          if (data.status === "duplicate") {
-            setLibStatus("ok", "云端谱库已收录相同源码：", data.htmlUrl, "查看文件");
-            showToast("云端谱库已有相同源码");
-          } else if (data.status === "pr_created") {
-            setLibStatus("ok", "已提交谱库 PR（" + data.path + "）：", data.prUrl || data.htmlUrl, "查看 PR");
-            showToast("已提交至云端谱库 PR");
-          } else {
-            setLibStatus("ok", "已按歌手保存至 " + data.path + "：", data.htmlUrl, "在 GitHub 打开");
-            showToast("已保存「" + payload.artist + "/" + payload.title + "」至云端谱库");
-          }
-        } catch (err) {
-          const msg = err && err.message ? err.message : "网络请求失败";
-          setLibStatus("err", "保存失败：" + msg);
-          showToast("云端存库失败：" + msg, { error: true });
-        } finally {
-          libSubmitBtn.disabled = false;
+        const tierLabel = LIBRARY_TIER_LABELS[payload.tier] || "标准";
+        const commitMsg = "Add " + payload.artist + "/" + payload.title + " (" + tierLabel + ", " + payload.score + "分)";
+        let ghUrl =
+          "https://github.com/" + LIBRARY_REPO_SLUG + "/new/main?filename=" +
+          encodeURIComponent(relPath) + "&message=" + encodeURIComponent(commitMsg);
+        const encVal = encodeURIComponent(normCode);
+        if (encVal.length <= 5500) {
+          ghUrl += "&value=" + encVal;
+        }
+
+        const copied = await copyTextSafe(normCode);
+        window.open(ghUrl, "_blank", "noopener");
+        if (copied) {
+          setLibStatus(
+            "ok",
+            "已复制 score_data.py 到剪贴板，在打开的 GitHub 页面粘贴后选「Create a new branch and start a pull request」即可，合并后 Actions 自动编译上架。",
+            ghUrl,
+            "打开 GitHub PR 页"
+          );
+          showToast("已复制源码，请在 GitHub 页面创建 PR");
+        } else {
+          setLibStatus(
+            "warn",
+            "已打开 GitHub 新建文件页面；如未自动填入，请点左侧「下载规范 .py」并提交 PR：",
+            ghUrl,
+            "前往 GitHub"
+          );
         }
       }
 
       function downloadNormalizedPy(payload) {
         const relPath = buildLibraryTargetPath(payload.artist, payload.title, payload.tier, payload.score);
         const fname = relPath.split("/").pop();
-        const blob = new Blob([payload.code], { type: "text/x-python;charset=utf-8" });
+        const normCode = normalizeScorePyForHash(payload.code);
+        const blob = new Blob([normCode], { type: "text/x-python;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -11491,36 +11776,197 @@
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setLibStatus("ok", "已按规范命名导出：" + relPath + "（可在谱库 GitHub 直接上传至该目录）");
+        setLibStatus("ok", "已按规范命名导出：" + relPath + "（可直接在 GitHub 拖入该目录提 PR）");
       }
+
+      async function loadCloudSong(item) {
+        if (!item || !item.songBase) return;
+        const baseSongUrl = LIBRARY_SITE_BASE + encodePathSegments(item.songBase) + "/";
+        const manifestRel = encodePathSegments(item.manifestFile || "sync_manifest.json");
+        libModalMeta.textContent = "正在加载「" + item.artist + " - " + item.title + "」…";
+        try {
+          const resp = await fetch(baseSongUrl + manifestRel, { cache: "no-cache" });
+          if (!resp.ok) throw new Error("HTTP " + resp.status);
+          const manifest = await resp.json();
+          const rawPages = (Array.isArray(item.pages) && item.pages.length) ? item.pages : (manifest.pages || []);
+          const pageUrls = rawPages.map((p) => baseSongUrl + encodePathSegments(typeof p === "string" ? p : p.file));
+          const audioFile = item.audioFile || manifest.audio;
+          const pdfFile = item.pdfFile || manifest.pdf || "";
+          const audioUrl = baseSongUrl + encodePathSegments(audioFile);
+          const pdfUrl = pdfFile ? (baseSongUrl + encodePathSegments(pdfFile)) : "";
+
+          revokeImportedUrls();
+          activeDetection = null;
+          activeLibraryState = null;
+          topbarSaveLibBtn.classList.add("hidden");
+          isImported = false;
+          activeCloudSlug = item.slug || "";
+          hasStarted = false;
+          followPaused = false;
+          sheetPaper.classList.remove("started");
+
+          setMedia(audioUrl, pdfUrl, pdfFile, audioFile);
+          renderManifest(manifest, pageUrls);
+          closeLibraryModal();
+          updateUrlSongSlug(activeCloudSlug);
+          if (sheetPane) sheetPane.scrollTop = 0;
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          showToast("已载入云端曲谱「" + item.artist + " - " + item.title + "」", { duration: 3500 });
+        } catch (err) {
+          const msg = err && err.message ? err.message : "加载失败";
+          libModalMeta.textContent = "加载曲谱失败：" + msg;
+          showToast("加载云端曲谱失败：" + msg, { type: "error", duration: 4000 });
+        }
+      }
+
+      function renderCloudCatalog(catalog, filterText) {
+        libCatalogList.innerHTML = "";
+        if (!catalog || !Array.isArray(catalog.items)) {
+          const empty = document.createElement("div");
+          empty.className = "lib-empty";
+          empty.textContent = "云端曲库暂不可用或尚未完成首次构建发布，可稍后点击「刷新」重试。";
+          libCatalogList.appendChild(empty);
+          libModalMeta.textContent = "未获取到 catalog.json";
+          return;
+        }
+
+        const q = String(filterText || "").trim().toLowerCase();
+        const matched = catalog.items.filter((it) => {
+          if (!q) return true;
+          const hay = [it.artist, it.title, it.tierLabel, it.tier].filter(Boolean).join(" ").toLowerCase();
+          return hay.includes(q);
+        });
+
+        const byArtist = new Map();
+        for (const it of matched) {
+          const artist = it.artist || "未分类";
+          if (!byArtist.has(artist)) byArtist.set(artist, []);
+          byArtist.get(artist).push(it);
+        }
+
+        libModalMeta.textContent =
+          "共收录 " + catalog.items.length + " 首（当前显示 " + matched.length + " 首 · " + byArtist.size + " 位歌手）";
+
+        if (!matched.length) {
+          const empty = document.createElement("div");
+          empty.className = "lib-empty";
+          empty.textContent = q ? "没有匹配的曲目，换个歌手或关键词试试。" : "曲库暂无曲目。";
+          libCatalogList.appendChild(empty);
+          return;
+        }
+
+        const sortedArtists = Array.from(byArtist.keys()).sort((a, b) => a.localeCompare(b, "zh-CN"));
+        for (const artist of sortedArtists) {
+          const songs = byArtist.get(artist).slice().sort((a, b) => (b.score || 0) - (a.score || 0) || String(a.title).localeCompare(String(b.title), "zh-CN"));
+          const groupEl = document.createElement("div");
+          groupEl.className = "lib-group";
+
+          const headEl = document.createElement("div");
+          headEl.className = "lib-group-head";
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = artist;
+          const cntSpan = document.createElement("span");
+          cntSpan.className = "lib-group-count";
+          cntSpan.textContent = songs.length + " 首";
+          headEl.append(nameSpan, cntSpan);
+          groupEl.appendChild(headEl);
+
+          for (const it of songs) {
+            const row = document.createElement("div");
+            row.className = "lib-song-row" + (activeCloudSlug && activeCloudSlug === it.slug ? " active" : "");
+
+            const main = document.createElement("div");
+            main.className = "lib-song-main";
+            main.addEventListener("click", () => loadCloudSong(it));
+
+            const top = document.createElement("div");
+            top.className = "lib-song-top";
+            const titleEl = document.createElement("span");
+            titleEl.className = "lib-song-title";
+            titleEl.textContent = it.title || "Untitled";
+            const tierEl = document.createElement("span");
+            tierEl.className = "lib-badge";
+            tierEl.textContent = it.tierLabel || LIBRARY_TIER_LABELS[it.tier] || "标准";
+            const scoreEl = document.createElement("span");
+            scoreEl.className = "lib-badge score";
+            scoreEl.textContent = (Number.isFinite(Number(it.score)) ? it.score : 80) + "分";
+            top.append(titleEl, tierEl, scoreEl);
+
+            const sub = document.createElement("div");
+            sub.className = "lib-song-sub";
+            const metaParts = [];
+            metaParts.push((it.capo || 0) > 0 ? ("Capo " + it.capo) : "标准调弦");
+            if (it.bpm) metaParts.push(it.bpm + " BPM");
+            if (it.bars) metaParts.push(it.bars + " 小节");
+            if (it.duration) metaParts.push(fmtTime(it.duration));
+            sub.textContent = metaParts.join(" · ");
+
+            main.append(top, sub);
+
+            const acts = document.createElement("div");
+            acts.className = "lib-song-actions";
+
+            if (it.githubUrl) {
+              const srcLink = document.createElement("a");
+              srcLink.className = "lib-btn-sm";
+              srcLink.href = it.githubUrl;
+              srcLink.target = "_blank";
+              srcLink.rel = "noopener";
+              srcLink.textContent = ".py";
+              acts.appendChild(srcLink);
+            }
+            if (it.bundleFile && it.songBase) {
+              const zipLink = document.createElement("a");
+              zipLink.className = "lib-btn-sm";
+              zipLink.href = LIBRARY_SITE_BASE + encodePathSegments(it.songBase + "/" + it.bundleFile);
+              zipLink.download = it.bundleFile;
+              zipLink.textContent = "ZIP";
+              acts.appendChild(zipLink);
+            }
+
+            const playSongBtn = document.createElement("button");
+            playSongBtn.type = "button";
+            playSongBtn.className = "lib-btn-sm primary";
+            playSongBtn.textContent = (activeCloudSlug && activeCloudSlug === it.slug) ? "当前在播" : "立即播放";
+            playSongBtn.addEventListener("click", () => loadCloudSong(it));
+            acts.appendChild(playSongBtn);
+
+            row.append(main, acts);
+            groupEl.appendChild(row);
+          }
+
+          libCatalogList.appendChild(groupEl);
+        }
+      }
+
+      async function openLibraryModal({ force = false } = {}) {
+        closePopovers();
+        importModal.classList.remove("open");
+        pdfModal.classList.remove("open");
+        calModal.classList.remove("open");
+        libraryModal.classList.add("open");
+        libModalMeta.textContent = "正在读取云端曲库…";
+        const cat = await fetchCloudCatalog({ force });
+        renderCloudCatalog(cat, libSearchInput.value);
+      }
+
+      function closeLibraryModal() {
+        libraryModal.classList.remove("open");
+      }
+
+      libraryBtn.addEventListener("click", () => openLibraryModal());
+      closeLibraryBtn.addEventListener("click", closeLibraryModal);
+      libraryModal.addEventListener("click", (e) => {
+        if (e.target === libraryModal) closeLibraryModal();
+      });
+      libSearchInput.addEventListener("input", () => {
+        renderCloudCatalog(cloudCatalogCache, libSearchInput.value);
+      });
+      libRefreshBtn.addEventListener("click", () => openLibraryModal({ force: true }));
 
       [libArtistInput, libTitleInput, libTierSelect, libScoreInput].forEach((el) => {
         el.addEventListener("input", updateLibPathPreview);
         el.addEventListener("change", updateLibPathPreview);
-      });
-
-      libConfigToggleBtn.addEventListener("click", () => {
-        libConfigBox.classList.toggle("hidden");
-        if (!libConfigBox.classList.contains("hidden")) {
-          libWorkerUrlInput.value = getLibraryWorkerUrl();
-          libWorkerUrlInput.focus();
-        }
-      });
-
-      libSaveCfgBtn.addEventListener("click", () => {
-        const raw = libWorkerUrlInput.value.trim().replace(/\/+$/, "");
-        if (raw && !/^https?:\/\//i.test(raw)) {
-          setLibStatus("err", "Worker 地址必须以 https:// 或 http:// 开头");
-          return;
-        }
-        try {
-          if (raw) localStorage.setItem(LIBRARY_WORKER_KEY, raw);
-          else localStorage.removeItem(LIBRARY_WORKER_KEY);
-        } catch {
-          // Ignore
-        }
-        libConfigBox.classList.add("hidden");
-        setLibStatus(raw ? "ok" : "warn", raw ? "已保存 Worker 接口地址，现在可以点击「立即保存到云端」。" : "已清除本地 Worker 地址。");
       });
 
       libDownloadPyBtn.addEventListener("click", () => {
@@ -11530,7 +11976,7 @@
         downloadNormalizedPy(collectLibraryFormPayload(code, analysis));
       });
 
-      libSubmitBtn.addEventListener("click", () => {
+      libPrBtn.addEventListener("click", () => {
         const code = (stagedReady && stagedReady.scoreDataText) || (activeLibraryState && activeLibraryState.code) || "";
         const analysis = (stagedReady && stagedReady.scoreAnalysis) || (activeLibraryState && activeLibraryState.analysis) || {};
         if (!code) return;
@@ -11538,7 +11984,7 @@
         if (activeLibraryState && (!stagedReady || !stagedReady.scoreDataText)) {
           activeLibraryState.payload = payload;
         }
-        submitScoreToLibrary(payload);
+        copySourceAndOpenGitHubPR(payload);
       });
 
       topbarSaveLibBtn.addEventListener("click", () => {
@@ -11933,10 +12379,12 @@
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
 
-      function loadBuiltinProject() {
+      function loadBuiltinProject({ clearQuery = false } = {}) {
         revokeImportedUrls();
         activeDetection = null;
         activeLibraryState = null;
+        activeCloudSlug = "";
+        if (clearQuery) updateUrlSongSlug("");
         topbarSaveLibBtn.classList.add("hidden");
         isImported = false;
         hasStarted = false;
@@ -11954,9 +12402,28 @@
         if (sheetPane) sheetPane.scrollTop = 0;
       }
 
+      async function bootCloudSongFromUrl(slug) {
+        if (!slug) return;
+        const cat = await fetchCloudCatalog();
+        if (!cat || !Array.isArray(cat.items)) return;
+        const hit = cat.items.find((it) => it.slug === slug);
+        if (hit) await loadCloudSong(hit);
+      }
+
+      const initialSongSlug = (() => {
+        try {
+          return new URLSearchParams(location.search).get("song") || "";
+        } catch {
+          return "";
+        }
+      })();
+
       applyStageLayout();
       setSpeed(1);
       loadBuiltinProject();
+      if (initialSongSlug) {
+        bootCloudSongFromUrl(initialSongSlug);
+      }
     })();
   </script>
 </body>
