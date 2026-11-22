@@ -1957,7 +1957,7 @@
         </div>
         <div class="lib-actions">
           <label class="lib-auto-check">
-            <input type="checkbox" id="lib-auto-save" />
+            <input type="checkbox" id="lib-auto-save" checked />
             开始练习时自动保存
           </label>
           <div class="lib-action-btns">
@@ -8495,7 +8495,7 @@
       const libSubmitBtn = document.getElementById("lib-submit-btn");
       const libStatusEl = document.getElementById("lib-status");
 
-      const DEFAULT_LIBRARY_WORKER_URL = "";
+      const DEFAULT_LIBRARY_WORKER_URL = "https://guitar-tab-library-worker.zcsos.workers.dev";
       const LIBRARY_REPO_SLUG = "zxsos/guitar-tab-library";
       const LIBRARY_WORKER_KEY = "gtp_library_worker_url";
       const LIBRARY_TIER_LABELS = { beginner: "新手", standard: "标准", advanced: "进阶" };
