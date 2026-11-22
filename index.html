@@ -8334,6 +8334,21 @@
         headerObserver.observe(headerCropEl);
       }
 
+      function updateScrubberMarkers(manifest) {
+        scrubMarkers.innerHTML = "";
+        const dur = getDuration();
+        if (dur > 0 && manifest && manifest.sections) {
+          manifest.sections.forEach((sec) => {
+            if (sec.start <= 0.5) return;
+            const pct = Math.min(99.5, Math.max(0.5, (sec.start / dur) * 100));
+            const tick = document.createElement("span");
+            tick.className = "scrub-tick";
+            tick.style.left = pct.toFixed(3) + "%";
+            scrubMarkers.appendChild(tick);
+          });
+        }
+      }
+
       function renderManifest(manifest, pageUrls) {
         activeManifest = manifest;
         activePageUrls = pageUrls;
@@ -8361,18 +8376,7 @@
         setupHeaderObserver(hasHeader);
 
         // Scrubber section markers
-        scrubMarkers.innerHTML = "";
-        const dur = getDuration();
-        if (dur > 0 && manifest.sections) {
-          manifest.sections.forEach((sec) => {
-            if (sec.start <= 0.5) return;
-            const pct = Math.min(99.5, Math.max(0.5, (sec.start / dur) * 100));
-            const tick = document.createElement("span");
-            tick.className = "scrub-tick";
-            tick.style.left = pct.toFixed(3) + "%";
-            scrubMarkers.appendChild(tick);
-          });
-        }
+        updateScrubberMarkers(manifest);
 
         // System rows
         systemsFlowEl.innerHTML = "";
@@ -8484,6 +8488,16 @@
         locatePill.classList.toggle("visible", paused && !player.paused);
       }
 
+      function getStickyBottom() {
+        const topBarH = topBar.getBoundingClientRect().height;
+        let stickyBottom = topBarH + 8;
+        if (stageVisible && stageDock && !stageDock.classList.contains("hidden")) {
+          const dockTop = parseFloat(getComputedStyle(stageDock).top) || (topBarH + 10);
+          stickyBottom = dockTop + stageDock.getBoundingClientRect().height + 12;
+        }
+        return stickyBottom;
+      }
+
       function scrollToSystem(sysIdx, force) {
         if (!force && followPaused) return;
         const ref = rowRefs[sysIdx];
@@ -8491,16 +8505,12 @@
         const rect = ref.row.getBoundingClientRect();
         if (rect.height <= 0) return;
 
-        const topBarH = topBar.getBoundingClientRect().height;
-        const dockH = (stageVisible && stageDock && !stageDock.classList.contains("hidden"))
-          ? (stageDock.getBoundingClientRect().height + 14)
-          : 0;
-        const stickyTop = topBarH + dockH;
+        const stickyBottom = getStickyBottom();
         const playerBarH = playerBar.getBoundingClientRect().height;
-        const avail = Math.max(80, window.innerHeight - stickyTop - playerBarH - 24 - rect.height);
-        const targetY = Math.max(0, rect.top + window.scrollY - stickyTop - Math.max(12, avail * 0.3));
+        const avail = Math.max(40, window.innerHeight - stickyBottom - playerBarH - 20 - rect.height);
+        const targetY = Math.max(0, rect.top + window.scrollY - stickyBottom - Math.max(8, avail * 0.28));
 
-        programmaticScrollUntil = performance.now() + 900;
+        programmaticScrollUntil = performance.now() + 1400;
         window.scrollTo({ top: targetY, behavior: "smooth" });
       }
 
@@ -8575,6 +8585,16 @@
           lastSysIdx = sys.sysIdx;
           if (prev !== -1 && !player.paused && !followPaused) {
             scrollToSystem(sys.sysIdx, false);
+          }
+        } else if (!player.paused && !followPaused && hasStarted && performance.now() > programmaticScrollUntil) {
+          const activeRef = rowRefs[sys.sysIdx];
+          if (activeRef) {
+            const rect = activeRef.row.getBoundingClientRect();
+            const stickyBottom = getStickyBottom();
+            const playerTop = window.innerHeight - playerBar.getBoundingClientRect().height - 8;
+            if (rect.height > 0 && (rect.top < stickyBottom - 4 || rect.bottom > playerTop)) {
+              scrollToSystem(sys.sysIdx, false);
+            }
           }
         }
 
@@ -9264,6 +9284,7 @@
 
       function setStageMode(mode) {
         stageMode = mode === "highway" ? "highway" : "fretboard";
+        programmaticScrollUntil = performance.now() + 600;
         stageDock.classList.toggle("is-highway", stageMode === "highway");
         stageTabBtns.forEach((btn) => {
           const isAct = btn.dataset.mode === stageMode;
@@ -9272,16 +9293,29 @@
         });
         syncStageCanvasSize();
         renderSync(player.currentTime || 0);
+        if (stageVisible && activeManifest && (hasStarted || !player.paused) && !followPaused) {
+          requestAnimationFrame(() => {
+            if (!activeManifest) return;
+            scrollToSystem(findPlaybackState(player.currentTime || 0).sys.sysIdx, true);
+          });
+        }
       }
 
       function setStageVisible(vis) {
         stageVisible = Boolean(vis);
+        programmaticScrollUntil = performance.now() + 600;
         stageDock.classList.toggle("hidden", !stageVisible);
         stageToggleBtn.classList.toggle("active", stageVisible);
         stageToggleBtn.setAttribute("aria-pressed", stageVisible ? "true" : "false");
         if (stageVisible) {
           syncStageCanvasSize();
           renderSync(player.currentTime || 0);
+        }
+        if (activeManifest && (hasStarted || !player.paused) && !followPaused) {
+          requestAnimationFrame(() => {
+            if (!activeManifest) return;
+            scrollToSystem(findPlaybackState(player.currentTime || 0).sys.sysIdx, true);
+          });
         }
       }
 
@@ -9435,6 +9469,9 @@
         markStarted();
         updatePlayIcon();
         locatePill.classList.toggle("visible", followPaused);
+        if (activeManifest && !followPaused) {
+          scrollToSystem(findPlaybackState(player.currentTime || 0).sys.sysIdx, false);
+        }
         startRaf();
       });
       player.addEventListener("playing", () => {
@@ -9455,14 +9492,15 @@
       });
       player.addEventListener("loadedmetadata", () => {
         if (activeManifest) {
-          renderManifest(activeManifest, activePageUrls);
+          updateScrubberMarkers(activeManifest);
+          renderSync(player.currentTime || 0);
         }
       });
       player.addEventListener("timeupdate", () => {
         if (rafId === null) renderSync(player.currentTime || 0);
       });
 
-      // Detect Manual Scrolling While Playing
+      // Detect Manual Scrolling While Playing (explicit user gestures only)
       function onUserScrollIntent() {
         if (!player.paused && !player.ended && performance.now() > programmaticScrollUntil) {
           setFollowPaused(true);
@@ -9471,7 +9509,11 @@
 
       window.addEventListener("wheel", onUserScrollIntent, { passive: true });
       window.addEventListener("touchmove", onUserScrollIntent, { passive: true });
-      window.addEventListener("scroll", onUserScrollIntent, { passive: true });
+      window.addEventListener("pointerdown", (e) => {
+        if (e.clientX >= document.documentElement.clientWidth) {
+          onUserScrollIntent();
+        }
+      }, { passive: true });
 
       // Popovers & Modals
       moreBtn.addEventListener("click", (e) => {
