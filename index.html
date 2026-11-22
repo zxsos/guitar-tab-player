@@ -980,6 +980,7 @@
       background: #fafafa;
       padding: 20px 16px;
       text-align: center;
+      cursor: pointer;
       transition: border-color 0.15s ease, background-color 0.15s ease;
       margin-bottom: 12px;
     }
@@ -993,6 +994,7 @@
       color: var(--accent);
       margin-bottom: 6px;
       display: inline-flex;
+      pointer-events: none;
     }
 
     .dz-text {
@@ -1000,6 +1002,7 @@
       color: var(--text);
       font-weight: 500;
       margin: 0 0 12px;
+      pointer-events: none;
     }
 
     .dz-btns {
@@ -1280,7 +1283,7 @@
   </header>
 
   <input type="file" id="dir-input" class="hidden-input" webkitdirectory directory multiple />
-  <input type="file" id="files-input" class="hidden-input" multiple accept=".zip,.mp3,.wav,.m4a,.ogg,.png,.json,.py,.pdf" />
+  <input type="file" id="files-input" class="hidden-input" multiple accept=".zip,application/zip,application/x-zip-compressed,.mp3,.wav,.m4a,.ogg,.png,.json,.py,.pdf" />
 
   <main class="sheet-wrap">
     <section class="sheet-paper" id="sheet-paper" aria-label="六线谱">
@@ -3120,7 +3123,7 @@
         pauseIcon.classList.toggle("hidden", !playing);
       }
 
-      function setMedia(audioUrl, pdfUrl, pdfName) {
+      function setMedia(audioUrl, pdfUrl, pdfName, audioName) {
         player.pause();
         stopRaf();
         locatePill.classList.remove("visible");
@@ -3130,7 +3133,7 @@
         updatePlayIcon();
 
         menuDlMp3.href = audioUrl;
-        menuDlMp3.download = (activeManifest && activeManifest.audio) ? activeManifest.audio : "audio.mp3";
+        menuDlMp3.download = audioName || ((activeManifest && activeManifest.audio) ? activeManifest.audio : "audio.mp3");
 
         if (pdfUrl) {
           openPdfBtn.classList.remove("hidden");
@@ -3579,6 +3582,8 @@
 
       function openImportModal() {
         closePopovers();
+        pdfModal.classList.remove("open");
+        calModal.classList.remove("open");
         importModal.classList.add("open");
       }
 
@@ -3599,6 +3604,12 @@
       });
 
       document.getElementById("pick-files-btn").addEventListener("click", () => {
+        filesInput.value = "";
+        filesInput.click();
+      });
+
+      modalDropzone.addEventListener("click", (e) => {
+        if (e.target && e.target.closest && e.target.closest("button")) return;
         filesInput.value = "";
         filesInput.click();
       });
@@ -3676,78 +3687,201 @@
       let dragDepth = 0;
 
       function hasFilesTransfer(e) {
-        const types = e.dataTransfer && e.dataTransfer.types;
-        return types && Array.from(types).includes("Files");
+        const dt = e && e.dataTransfer;
+        if (!dt) return false;
+        if (dt.files && dt.files.length > 0) return true;
+        if (dt.items && Array.from(dt.items).some((it) => it.kind === "file")) return true;
+        const types = dt.types ? Array.from(dt.types) : [];
+        return types.includes("Files") || types.includes("application/x-moz-file");
+      }
+
+      function hasUriTransfer(e) {
+        const types = e && e.dataTransfer && e.dataTransfer.types ? Array.from(e.dataTransfer.types) : [];
+        return types.includes("text/uri-list");
+      }
+
+      function isSupportedDrag(e) {
+        return hasFilesTransfer(e) || hasUriTransfer(e);
+      }
+
+      function safeGetEntry(item) {
+        try {
+          return item && item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+        } catch (_err) {
+          return null;
+        }
       }
 
       async function extractDroppedFiles(dt) {
+        if (!dt) return [];
+        const directFiles = dt.files ? Array.from(dt.files) : [];
         const items = dt.items ? Array.from(dt.items) : [];
-        const entries = items.map((it) => (it.webkitGetAsEntry ? it.webkitGetAsEntry() : null)).filter(Boolean);
-        if (entries.length) {
-          const collected = [];
-          for (const ent of entries) {
-            collected.push(...(await collectEntryFiles(ent, "")));
+        const snapshots = items.map((it) => {
+          let syncFile = null;
+          try {
+            syncFile = (it.kind === "file" && it.getAsFile) ? it.getAsFile() : null;
+          } catch (_err) {
+            syncFile = null;
           }
-          return collected;
+          return {
+            kind: it.kind,
+            syncFile,
+            entry: safeGetEntry(it)
+          };
+        });
+
+        const collected = [];
+        for (const snap of snapshots) {
+          if (snap.entry && snap.entry.isDirectory) {
+            try {
+              collected.push(...(await collectEntryFiles(snap.entry, "")));
+            } catch (_err) {
+              // Ignore unreadable directory entry and continue
+            }
+          } else if (snap.syncFile) {
+            collected.push(snap.syncFile);
+          } else if (snap.entry && snap.entry.isFile) {
+            try {
+              collected.push(...(await collectEntryFiles(snap.entry, "")));
+            } catch (_err) {
+              // Ignore unreadable file entry and continue
+            }
+          }
         }
-        return dt.files ? Array.from(dt.files) : [];
+
+        if (!collected.length && directFiles.length) {
+          return directFiles;
+        }
+        return collected;
+      }
+
+      async function handleDropTransfer(dt) {
+        openImportModal();
+        valPanel.classList.remove("hidden");
+        stagedReady = null;
+        importStartBtn.disabled = true;
+        setValRow("source", "spin", "读取拖入文件…");
+        setValRow("audio", "muted", "等待检查");
+        setValRow("pages", "muted", "等待检查");
+        setValRow("manifest", "muted", "等待检查");
+        setValRow("pdf", "muted", "等待检查");
+
+        let dropped = [];
+        try {
+          dropped = await extractDroppedFiles(dt);
+        } catch (err) {
+          setValRow("source", "err", err && err.message ? err.message : "读取拖入文件失败");
+          setValRow("audio", "err", "未解析");
+          setValRow("pages", "err", "未解析");
+          setValRow("manifest", "err", "未解析");
+          setValRow("pdf", "muted", "未包含（可选）");
+          showToast("读取拖入文件失败，请点击「选择 ZIP / 文件」导入", { type: "error", duration: 4000 });
+          return;
+        }
+
+        if (dropped.length) {
+          await inspectAndValidateFiles(dropped);
+        } else {
+          setValRow("source", "err", "未获取到本地文件（请从系统文件管理器拖入，或点击上方「选择 ZIP / 文件」）");
+          setValRow("audio", "err", "未解析");
+          setValRow("pages", "err", "未解析");
+          setValRow("manifest", "err", "未解析");
+          setValRow("pdf", "muted", "未包含（可选）");
+          showToast("未检测到本地文件，请从系统文件管理器拖入或点击选择文件", { type: "error", duration: 4000 });
+        }
       }
 
       ["dragenter", "dragover"].forEach((ev) => {
         modalDropzone.addEventListener(ev, (e) => {
-          if (!hasFilesTransfer(e)) return;
+          if (!isSupportedDrag(e)) return;
           e.preventDefault();
           e.stopPropagation();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
           modalDropzone.classList.add("dragover");
         });
       });
 
       modalDropzone.addEventListener("dragleave", (e) => {
-        if (!hasFilesTransfer(e)) return;
+        if (!isSupportedDrag(e)) return;
         e.preventDefault();
         e.stopPropagation();
-        modalDropzone.classList.remove("dragover");
+        if (!e.relatedTarget || !modalDropzone.contains(e.relatedTarget)) {
+          modalDropzone.classList.remove("dragover");
+        }
       });
 
       modalDropzone.addEventListener("drop", async (e) => {
-        if (!hasFilesTransfer(e)) return;
+        if (!isSupportedDrag(e)) return;
         e.preventDefault();
         e.stopPropagation();
         dragDepth = 0;
         modalDropzone.classList.remove("dragover");
         dropOverlay.classList.remove("open");
-        const dropped = await extractDroppedFiles(e.dataTransfer);
-        if (dropped.length) await inspectAndValidateFiles(dropped);
+        await handleDropTransfer(e.dataTransfer);
+      });
+
+      ["dragenter", "dragover"].forEach((ev) => {
+        importModal.addEventListener(ev, (e) => {
+          if (!isSupportedDrag(e)) return;
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+          modalDropzone.classList.add("dragover");
+        });
+      });
+
+      importModal.addEventListener("dragleave", (e) => {
+        if (!isSupportedDrag(e)) return;
+        e.stopPropagation();
+        if (!e.relatedTarget || !importModal.contains(e.relatedTarget)) {
+          modalDropzone.classList.remove("dragover");
+        }
+      });
+
+      importModal.addEventListener("drop", async (e) => {
+        if (!isSupportedDrag(e)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragDepth = 0;
+        modalDropzone.classList.remove("dragover");
+        dropOverlay.classList.remove("open");
+        await handleDropTransfer(e.dataTransfer);
       });
 
       window.addEventListener("dragenter", (e) => {
-        if (!hasFilesTransfer(e)) return;
+        if (!isSupportedDrag(e)) return;
         e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
         if (importModal.classList.contains("open")) return;
         dragDepth++;
-        dropOverlay.classList.add("open");
+        if (hasFilesTransfer(e)) dropOverlay.classList.add("open");
       });
 
       window.addEventListener("dragover", (e) => {
-        if (!hasFilesTransfer(e)) return;
+        if (!isSupportedDrag(e)) return;
         e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
       });
 
       window.addEventListener("dragleave", (e) => {
-        if (!hasFilesTransfer(e)) return;
+        if (!isSupportedDrag(e)) return;
         if (importModal.classList.contains("open")) return;
         dragDepth = Math.max(0, dragDepth - 1);
         if (dragDepth === 0) dropOverlay.classList.remove("open");
       });
 
       window.addEventListener("drop", async (e) => {
-        if (!hasFilesTransfer(e)) return;
+        if (e.defaultPrevented) return;
+        const dt = e.dataTransfer;
+        const hasAnyTypes = dt && dt.types && dt.types.length > 0;
+        if (!hasFilesTransfer(e) && !hasUriTransfer(e)) {
+          if (!hasAnyTypes) return;
+          return;
+        }
         e.preventDefault();
         dragDepth = 0;
         dropOverlay.classList.remove("open");
-        const dropped = await extractDroppedFiles(e.dataTransfer);
-        openImportModal();
-        if (dropped.length) await inspectAndValidateFiles(dropped);
+        await handleDropTransfer(dt);
       });
 
       // Keyboard Shortcuts
@@ -3982,6 +4116,15 @@
         setValRow("manifest", "muted", "等待检查");
         setValRow("pdf", "muted", "等待检查");
 
+        try {
+          await runInspection(rawFiles);
+        } catch (err) {
+          setValRow("source", "err", err && err.message ? err.message : "文件校验失败");
+          setValRow("manifest", "err", "校验过程中发生异常");
+        }
+      }
+
+      async function runInspection(rawFiles) {
         let files = [];
         const zipFiles = rawFiles.filter((f) => /\.zip$/i.test(f.name) && !f.name.startsWith("."));
 
@@ -4213,7 +4356,7 @@
         followPaused = false;
         sheetPaper.classList.remove("started");
 
-        setMedia(audioUrl, pdfUrl, pdfFile ? pdfFile.name : "");
+        setMedia(audioUrl, pdfUrl, pdfFile ? pdfFile.name : "", audioFile.name);
         renderManifest(manifest, orderedPageUrls);
         closeImportModal();
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -4322,16 +4465,30 @@
           const url = URL.createObjectURL(audioFile);
           const tmp = document.createElement("audio");
           tmp.preload = "metadata";
+          let settled = false;
+          const finish = (dur) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            tmp.onloadedmetadata = null;
+            tmp.ondurationchange = null;
+            tmp.onerror = null;
+            URL.revokeObjectURL(url);
+            resolve(Number.isFinite(dur) && dur > 0 ? dur : 0);
+          };
+          const timer = setTimeout(() => finish(tmp.duration), 8000);
+          const checkReady = () => {
+            if (Number.isFinite(tmp.duration) && tmp.duration > 0) {
+              finish(tmp.duration);
+            }
+          };
           tmp.onloadedmetadata = () => {
-            const dur = Number.isFinite(tmp.duration) ? tmp.duration : 0;
-            URL.revokeObjectURL(url);
-            resolve(dur);
+            if (tmp.duration !== Infinity) finish(tmp.duration);
           };
-          tmp.onerror = () => {
-            URL.revokeObjectURL(url);
-            resolve(0);
-          };
+          tmp.ondurationchange = checkReady;
+          tmp.onerror = () => finish(0);
           tmp.src = url;
+          tmp.load();
         });
       }
 
@@ -4696,7 +4853,7 @@
         const audioUrl = "./demo/call-of-silence/" + encodeURIComponent(BUILTIN_MANIFEST.audio);
         const pdfUrl = "./demo/call-of-silence/" + encodeURIComponent(BUILTIN_MANIFEST.pdf);
 
-        setMedia(audioUrl, pdfUrl, BUILTIN_MANIFEST.pdf);
+        setMedia(audioUrl, pdfUrl, BUILTIN_MANIFEST.pdf, BUILTIN_MANIFEST.audio);
         renderManifest(BUILTIN_MANIFEST, pageUrls);
       }
 
