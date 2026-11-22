@@ -1387,7 +1387,7 @@
         <span class="dz-icon" aria-hidden="true">
           <svg class="ico" style="width:26px;height:26px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </span>
-        <p class="dz-text">拖拽 .zip 产物包到此处，或点击选择文件</p>
+        <p class="dz-text">拖拽 .zip / 文件夹到此处、Ctrl+V 粘贴，或点击选择文件</p>
         <div class="dz-btns">
           <button type="button" class="pill-btn" id="pick-files-btn">
             <svg class="ico" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
@@ -3683,79 +3683,190 @@
         showToast("已恢复示例曲目", { duration: 2500 });
       });
 
-      // Modal Dropzone & Global Drag & Drop
+      // Modal Dropzone, Cross-Platform Drag & Drop, and Clipboard Paste
       let dragDepth = 0;
+      const FILE_DRAG_TYPES = [
+        "Files",
+        "application/x-moz-file",
+        "text/uri-list",
+        "text/x-moz-url",
+        "public.file-url",
+        "x-special/gnome-copied-files"
+      ];
 
-      function hasFilesTransfer(e) {
+      function isFileLikeDrag(e) {
         const dt = e && e.dataTransfer;
         if (!dt) return false;
         if (dt.files && dt.files.length > 0) return true;
         if (dt.items && Array.from(dt.items).some((it) => it.kind === "file")) return true;
         const types = dt.types ? Array.from(dt.types) : [];
-        return types.includes("Files") || types.includes("application/x-moz-file");
+        return FILE_DRAG_TYPES.some((t) => types.includes(t));
       }
 
-      function hasUriTransfer(e) {
-        const types = e && e.dataTransfer && e.dataTransfer.types ? Array.from(e.dataTransfer.types) : [];
-        return types.includes("text/uri-list");
-      }
-
-      function isSupportedDrag(e) {
-        return hasFilesTransfer(e) || hasUriTransfer(e);
-      }
-
-      function safeGetEntry(item) {
+      function safeGetData(dt, fmt) {
         try {
-          return item && item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+          return dt && typeof dt.getData === "function" ? (dt.getData(fmt) || "") : "";
         } catch (_err) {
-          return null;
+          return "";
         }
       }
 
-      async function extractDroppedFiles(dt) {
-        if (!dt) return [];
+      function safeUriBasename(rawUrl) {
+        try {
+          const clean = rawUrl.split(/[?#]/)[0];
+          const seg = clean.split("/").filter(Boolean).pop() || clean;
+          return decodeURIComponent(seg);
+        } catch (_err) {
+          return rawUrl;
+        }
+      }
+
+      function captureDataTransferSync(dt) {
+        if (!dt) {
+          return { types: [], directFiles: [], uriList: "", plainText: "", items: [] };
+        }
+        const types = dt.types ? Array.from(dt.types) : [];
         const directFiles = dt.files ? Array.from(dt.files) : [];
-        const items = dt.items ? Array.from(dt.items) : [];
-        const snapshots = items.map((it) => {
+        const uriList =
+          safeGetData(dt, "text/uri-list") ||
+          safeGetData(dt, "text/x-moz-url") ||
+          safeGetData(dt, "public.file-url") ||
+          safeGetData(dt, "x-special/gnome-copied-files");
+        const plainText = safeGetData(dt, "text/plain");
+        const rawItems = dt.items ? Array.from(dt.items) : [];
+        const items = rawItems.map((it) => {
           let syncFile = null;
           try {
             syncFile = (it.kind === "file" && it.getAsFile) ? it.getAsFile() : null;
           } catch (_err) {
             syncFile = null;
           }
-          return {
-            kind: it.kind,
-            syncFile,
-            entry: safeGetEntry(it)
-          };
+          let entry = null;
+          try {
+            entry = it.webkitGetAsEntry ? it.webkitGetAsEntry() : null;
+          } catch (_err) {
+            entry = null;
+          }
+          let handlePromise = null;
+          try {
+            handlePromise =
+              (it.kind === "file" && typeof it.getAsFileSystemHandle === "function")
+                ? it.getAsFileSystemHandle()
+                : null;
+          } catch (_err) {
+            handlePromise = null;
+          }
+          return { kind: it.kind || "", type: it.type || "", syncFile, entry, handlePromise };
         });
+        return { types, directFiles, uriList, plainText, items };
+      }
 
+      async function collectHandleFiles(handle, relPrefix) {
+        if (!handle) return [];
+        if (handle.kind === "file") {
+          const name = handle.name || "";
+          if (!name || name.startsWith(".")) return [];
+          const file = await handle.getFile();
+          const finalName = file.name || name;
+          Object.defineProperty(file, "_relPath", { value: relPrefix + finalName });
+          return [file];
+        }
+        if (handle.kind === "directory") {
+          const dirName = handle.name || "";
+          if (!dirName || IGNORED_DIRS.has(dirName) || dirName.startsWith(".")) return [];
+          const out = [];
+          const iter = typeof handle.entries === "function" ? handle.entries() : handle.values();
+          for await (const item of iter) {
+            const child = Array.isArray(item) ? item[1] : item;
+            out.push(...(await collectHandleFiles(child, relPrefix + dirName + "/")));
+          }
+          return out;
+        }
+        return [];
+      }
+
+      function extractTransferUrls(snap) {
+        const raw = [snap.uriList || "", snap.plainText || ""].filter(Boolean).join("\n");
+        return raw
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter((line) => line && !line.startsWith("#") && /^(https?|file):\/\//i.test(line));
+      }
+
+      async function resolveCapturedTransfer(snap) {
         const collected = [];
-        for (const snap of snapshots) {
-          if (snap.entry && snap.entry.isDirectory) {
+
+        for (const item of snap.items) {
+          // Tier 1: File System Access API handle (modern Chromium/Edge)
+          if (item.handlePromise) {
             try {
-              collected.push(...(await collectEntryFiles(snap.entry, "")));
+              const handle = await item.handlePromise;
+              if (handle) {
+                const handleFiles = await collectHandleFiles(handle, "");
+                if (handleFiles.length) {
+                  collected.push(...handleFiles);
+                  continue;
+                }
+              }
             } catch (_err) {
-              // Ignore unreadable directory entry and continue
+              // Fall through to Tier 2
             }
-          } else if (snap.syncFile) {
-            collected.push(snap.syncFile);
-          } else if (snap.entry && snap.entry.isFile) {
+          }
+
+          // Tier 2: WebKit entry (for directories) & synchronous getAsFile()
+          if (item.entry && item.entry.isDirectory) {
             try {
-              collected.push(...(await collectEntryFiles(snap.entry, "")));
+              collected.push(...(await collectEntryFiles(item.entry, "")));
             } catch (_err) {
-              // Ignore unreadable file entry and continue
+              // Ignore broken directory entry
+            }
+          } else if (item.syncFile) {
+            collected.push(item.syncFile);
+          } else if (item.entry && item.entry.isFile) {
+            try {
+              collected.push(...(await collectEntryFiles(item.entry, "")));
+            } catch (_err) {
+              // Ignore broken file entry
             }
           }
         }
 
-        if (!collected.length && directFiles.length) {
-          return directFiles;
+        // Tier 3: Direct FileList fallback
+        if (!collected.length && snap.directFiles.length) {
+          collected.push(...snap.directFiles);
         }
-        return collected;
+
+        if (collected.length) {
+          return { files: collected, diagnostic: "ok", types: snap.types };
+        }
+
+        // Tier 4: URL / file:// URI diagnostics & remote .zip download
+        const urls = extractTransferUrls(snap);
+        const zipUrl = urls.find((u) => /^https?:\/\//i.test(u) && /\.zip$/i.test(u.split(/[?#]/)[0]));
+        if (zipUrl) {
+          try {
+            const res = await fetch(zipUrl, { mode: "cors" });
+            if (!res.ok) {
+              return { files: [], diagnostic: "url-fetch-failed", url: zipUrl, error: "HTTP " + res.status, types: snap.types };
+            }
+            const ab = await res.arrayBuffer();
+            const fname = safeUriBasename(zipUrl) || "bundle.zip";
+            const file = new File([ab], fname, { type: "application/zip" });
+            return { files: [file], diagnostic: "url-zip", types: snap.types };
+          } catch (err) {
+            return { files: [], diagnostic: "url-fetch-failed", url: zipUrl, error: err && err.message ? err.message : "跨域或网络失败", types: snap.types };
+          }
+        }
+
+        const fileUri = urls.find((u) => /^file:\/\//i.test(u));
+        if (fileUri) {
+          return { files: [], diagnostic: "file-uri", fileName: safeUriBasename(fileUri), types: snap.types };
+        }
+
+        return { files: [], diagnostic: "empty", types: snap.types };
       }
 
-      async function handleDropTransfer(dt) {
+      async function handleCapturedTransfer(snap) {
         openImportModal();
         valPanel.classList.remove("hidden");
         stagedReady = null;
@@ -3766,9 +3877,9 @@
         setValRow("manifest", "muted", "等待检查");
         setValRow("pdf", "muted", "等待检查");
 
-        let dropped = [];
+        let result;
         try {
-          dropped = await extractDroppedFiles(dt);
+          result = await resolveCapturedTransfer(snap);
         } catch (err) {
           setValRow("source", "err", err && err.message ? err.message : "读取拖入文件失败");
           setValRow("audio", "err", "未解析");
@@ -3779,21 +3890,35 @@
           return;
         }
 
-        if (dropped.length) {
-          await inspectAndValidateFiles(dropped);
-        } else {
-          setValRow("source", "err", "未获取到本地文件（请从系统文件管理器拖入，或点击上方「选择 ZIP / 文件」）");
-          setValRow("audio", "err", "未解析");
-          setValRow("pages", "err", "未解析");
-          setValRow("manifest", "err", "未解析");
-          setValRow("pdf", "muted", "未包含（可选）");
-          showToast("未检测到本地文件，请从系统文件管理器拖入或点击选择文件", { type: "error", duration: 4000 });
+        if (result.files.length) {
+          await inspectAndValidateFiles(result.files);
+          return;
         }
+
+        const typeNote = result.types && result.types.length ? result.types.join(", ") : "无";
+        let errText;
+        let toastText;
+        if (result.diagnostic === "file-uri") {
+          errText = "浏览器安全限制无法读取 file:// 路径（" + result.fileName + "），请点击「选择 ZIP / 文件」或在文件管理器 Ctrl+C 后在此 Ctrl+V 粘贴";
+          toastText = "安全限制无法读取路径链接，请点击选择文件或 Ctrl+V 粘贴";
+        } else if (result.diagnostic === "url-fetch-failed") {
+          errText = "远程 ZIP 拉取失败（" + result.error + "），请先下载到本地再导入";
+          toastText = "远程 ZIP 下载失败：" + result.error;
+        } else {
+          errText = "浏览器未传回文件（types: " + typeNote + "），请点击「选择 ZIP / 文件」或按 Ctrl+V 粘贴";
+          toastText = "浏览器未传回文件，请点击选择文件或按 Ctrl+V 粘贴";
+        }
+
+        setValRow("source", "err", errText);
+        setValRow("audio", "err", "未解析");
+        setValRow("pages", "err", "未解析");
+        setValRow("manifest", "err", "未解析");
+        setValRow("pdf", "muted", "未包含（可选）");
+        showToast(toastText, { type: "error", duration: 4500 });
       }
 
       ["dragenter", "dragover"].forEach((ev) => {
         modalDropzone.addEventListener(ev, (e) => {
-          if (!isSupportedDrag(e)) return;
           e.preventDefault();
           e.stopPropagation();
           if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
@@ -3802,7 +3927,6 @@
       });
 
       modalDropzone.addEventListener("dragleave", (e) => {
-        if (!isSupportedDrag(e)) return;
         e.preventDefault();
         e.stopPropagation();
         if (!e.relatedTarget || !modalDropzone.contains(e.relatedTarget)) {
@@ -3811,18 +3935,17 @@
       });
 
       modalDropzone.addEventListener("drop", async (e) => {
-        if (!isSupportedDrag(e)) return;
         e.preventDefault();
         e.stopPropagation();
+        const snap = captureDataTransferSync(e.dataTransfer);
         dragDepth = 0;
         modalDropzone.classList.remove("dragover");
         dropOverlay.classList.remove("open");
-        await handleDropTransfer(e.dataTransfer);
+        await handleCapturedTransfer(snap);
       });
 
       ["dragenter", "dragover"].forEach((ev) => {
         importModal.addEventListener(ev, (e) => {
-          if (!isSupportedDrag(e)) return;
           e.preventDefault();
           e.stopPropagation();
           if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
@@ -3831,7 +3954,6 @@
       });
 
       importModal.addEventListener("dragleave", (e) => {
-        if (!isSupportedDrag(e)) return;
         e.stopPropagation();
         if (!e.relatedTarget || !importModal.contains(e.relatedTarget)) {
           modalDropzone.classList.remove("dragover");
@@ -3839,49 +3961,58 @@
       });
 
       importModal.addEventListener("drop", async (e) => {
-        if (!isSupportedDrag(e)) return;
         e.preventDefault();
         e.stopPropagation();
+        const snap = captureDataTransferSync(e.dataTransfer);
         dragDepth = 0;
         modalDropzone.classList.remove("dragover");
         dropOverlay.classList.remove("open");
-        await handleDropTransfer(e.dataTransfer);
+        await handleCapturedTransfer(snap);
       });
 
       window.addEventListener("dragenter", (e) => {
-        if (!isSupportedDrag(e)) return;
+        if (!isFileLikeDrag(e)) return;
         e.preventDefault();
         if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
         if (importModal.classList.contains("open")) return;
         dragDepth++;
-        if (hasFilesTransfer(e)) dropOverlay.classList.add("open");
+        dropOverlay.classList.add("open");
       });
 
       window.addEventListener("dragover", (e) => {
-        if (!isSupportedDrag(e)) return;
+        if (!isFileLikeDrag(e)) return;
         e.preventDefault();
         if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
       });
 
       window.addEventListener("dragleave", (e) => {
-        if (!isSupportedDrag(e)) return;
+        if (!isFileLikeDrag(e)) return;
         if (importModal.classList.contains("open")) return;
         dragDepth = Math.max(0, dragDepth - 1);
         if (dragDepth === 0) dropOverlay.classList.remove("open");
       });
 
       window.addEventListener("drop", async (e) => {
-        if (e.defaultPrevented) return;
-        const dt = e.dataTransfer;
-        const hasAnyTypes = dt && dt.types && dt.types.length > 0;
-        if (!hasFilesTransfer(e) && !hasUriTransfer(e)) {
-          if (!hasAnyTypes) return;
-          return;
-        }
+        if (e.defaultPrevented || !isFileLikeDrag(e)) return;
+        const snap = captureDataTransferSync(e.dataTransfer);
         e.preventDefault();
         dragDepth = 0;
         dropOverlay.classList.remove("open");
-        await handleDropTransfer(dt);
+        await handleCapturedTransfer(snap);
+      });
+
+      window.addEventListener("paste", async (e) => {
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : "";
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(tag) || (e.target && e.target.isContentEditable)) {
+          return;
+        }
+        const snap = captureDataTransferSync(e.clipboardData);
+        const hasClipboardFile =
+          snap.directFiles.length > 0 ||
+          snap.items.some((it) => it.syncFile || it.entry || it.handlePromise || it.kind === "file");
+        if (!hasClipboardFile) return;
+        e.preventDefault();
+        await handleCapturedTransfer(snap);
       });
 
       // Keyboard Shortcuts
