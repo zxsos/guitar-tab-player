@@ -1136,7 +1136,7 @@
 
     .lib-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       margin-bottom: 8px;
     }
@@ -1162,7 +1162,7 @@
       min-width: 0;
     }
 
-    .lib-score-meta {
+    .lib-meta-summary {
       font-size: 11px;
       color: var(--muted);
       line-height: 1.45;
@@ -1372,12 +1372,6 @@
       border: 1px solid var(--line);
       background: #f4f4f5;
       color: var(--text);
-    }
-
-    .lib-badge.score {
-      border-color: rgba(22, 163, 74, 0.25);
-      background: rgba(22, 163, 74, 0.08);
-      color: var(--ok);
     }
 
     .lib-song-sub {
@@ -2094,12 +2088,8 @@
               <option value="advanced">进阶</option>
             </select>
           </label>
-          <label class="lib-field">
-            乐谱评分（0–100分）
-            <input type="number" id="lib-score" min="0" max="100" step="1" />
-          </label>
         </div>
-        <div class="lib-score-meta" id="lib-score-breakdown">-</div>
+        <div class="lib-meta-summary" id="lib-meta-summary">-</div>
         <div class="lib-path-preview" id="lib-path-preview">-</div>
         <div class="lib-actions">
           <span class="lib-pr-hint">提 PR 后由 GitHub Actions 自动质检并编译上架</span>
@@ -8656,8 +8646,7 @@
       const libArtistInput = document.getElementById("lib-artist");
       const libTitleInput = document.getElementById("lib-title");
       const libTierSelect = document.getElementById("lib-tier");
-      const libScoreInput = document.getElementById("lib-score");
-      const libScoreBreakdownEl = document.getElementById("lib-score-breakdown");
+      const libMetaSummaryEl = document.getElementById("lib-meta-summary");
       const libPathPreviewEl = document.getElementById("lib-path-preview");
       const libDownloadPyBtn = document.getElementById("lib-download-py-btn");
       const libPrBtn = document.getElementById("lib-pr-btn");
@@ -11377,15 +11366,14 @@
         return s || fallback;
       }
 
-      function buildLibraryTargetPath(artist, title, tier, score) {
+      function buildLibraryTargetPath(artist, title, tier) {
         const safeArtist = sanitizeLibSegment(artist, "未分类");
         const safeTitle = sanitizeLibSegment(title, "Untitled");
         const tierLabel = LIBRARY_TIER_LABELS[tier] || "标准";
-        const intScore = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
-        return "scores/" + safeArtist + "/" + safeTitle + "_" + tierLabel + "_" + intScore + "分.py";
+        return "scores/" + safeArtist + "/" + safeTitle + "_" + tierLabel + ".py";
       }
 
-      function analyzeScorePython(pyText, manifestObj, hasPdf, pngCount) {
+      function analyzeScorePython(pyText, manifestObj) {
         const meta = parseScoreDataPy(pyText);
         const strMatch = (k) => {
           const m = pyText.match(new RegExp("^" + k + "\\s*=\\s*[\"']([^\"']+)[\"']", "m"));
@@ -11404,24 +11392,20 @@
         // Inspect Python notes/techniques directly for tier inference & metrics
         const noteRe = /\bn\(\s*([1-6])\s*,\s*(\d+)(?:\s*,\s*["']([^"']+)["'])?([^)]*)\)/g;
         let maxFret = 0;
-        let melCount = 0;
-        let bassCount = 0;
-        let innerCount = 0;
+        let noteCount = 0;
         let slapCount = 0;
         let harmCount = 0;
         let pmCount = 0;
         let graceCount = 0;
         let nm;
         while ((nm = noteRe.exec(pyText)) !== null) {
+          noteCount++;
           const fret = parseInt(nm[2], 10);
           const role = nm[3] || "melody";
           const opts = nm[4] || "";
           const isHarm = /\bharmonic\s*=\s*True\b/.test(opts);
           if (!isHarm && role !== "slap" && fret > maxFret) maxFret = fret;
-          if (role === "melody") melCount++;
-          else if (role === "bass") bassCount++;
-          else if (role === "inner") innerCount++;
-          else if (role === "slap") slapCount++;
+          if (role === "slap") slapCount++;
           if (isHarm) harmCount++;
           if (/\bpalm_mute\s*=\s*True\b/.test(opts)) pmCount++;
           if (/\bgrace_from\s*=/.test(opts)) graceCount++;
@@ -11451,7 +11435,7 @@
           }
         }
 
-        // Compute voice crossings from manifest notes (if MIDI-derived) or sequential py measures
+        // Compute voice crossings from manifest notes (if MIDI-derived)
         const barEntries = Object.entries(meta.parsedBars);
         const barCount = Math.max(barEntries.length, (manifestObj && Array.isArray(manifestObj.bars)) ? manifestObj.bars.length : 0);
         const lastBar = barEntries.length ? Math.max(...barEntries.map(([b]) => parseInt(b, 10))) : Math.max(0, barCount - 1);
@@ -11482,56 +11466,14 @@
           }
         }
 
-        // 1. Structure & completeness (0..30)
-        let structure = 0;
-        structure += barCount >= 16 ? 14 : (barCount >= 8 ? 11 : (barCount >= 4 ? 8 : 4));
-        if (meta.title) structure += 3;
-        if (strMatch("ARTIST") || meta.composer) structure += 3;
-        if (meta.bpm) structure += 3;
-        if (meta.capo !== null) structure += 2;
-        const barsWithChords = barEntries.filter(([, v]) => Boolean(v.chords)).length;
-        const chordRatio = barEntries.length ? barsWithChords / barEntries.length : 0;
-        structure += chordRatio >= 0.7 ? 5 : (chordRatio >= 0.3 ? 3 : (chordRatio > 0 ? 2 : 0));
-
-        // 2. Voicing & playability (0..30)
-        let voicing = 0;
-        voicing += crossings === 0 ? 18 : (crossings <= 2 ? 12 : Math.max(0, 14 - crossings * 2));
-        const tierFretCap = tier === "beginner" ? 7 : (tier === "standard" ? 12 : 15);
-        voicing += maxFret <= tierFretCap ? 12 : Math.max(4, 12 - (maxFret - tierFretCap) * 2);
-
-        // 3. Arrangement detail (0..25)
-        let arrangement = 0;
-        if (melCount > 0 && bassCount > 0) arrangement += 8;
-        else if (melCount > 0) arrangement += 4;
-        if (tier === "beginner") {
-          arrangement += 4;
-          arrangement += techVariety <= 1 ? 7 : 4;
-        } else {
-          arrangement += innerCount > 0 ? 4 : 2;
-          arrangement += techVariety >= 3 ? 7 : (techVariety >= 1 ? 5 : 2);
-        }
-        const landmarkMatch = pyText.match(/LANDMARKS[^=]*=\s*\{([^}]*)\}/s);
-        const hasLandmarks = Boolean(landmarkMatch && /\d+\s*:\s*\[/.test(landmarkMatch[1]));
-        arrangement += hasLandmarks ? 6 : (barCount >= 12 ? 2 : 0);
-
-        // 4. Deliverable bundle fidelity (0..15)
-        let bundle = 0;
-        if (manifestObj && Array.isArray(manifestObj.notes) && manifestObj.notes.length) bundle += 9;
-        else if (manifestObj && Array.isArray(manifestObj.bars) && manifestObj.bars.length) bundle += 4;
-        if (hasPdf) bundle += 3;
-        if (pngCount > 0) bundle += 3;
-
-        const score = Math.max(0, Math.min(100, structure + voicing + arrangement + bundle));
         const totalNotes = (manifestObj && Array.isArray(manifestObj.notes) && manifestObj.notes.length)
           ? manifestObj.notes.length
-          : (melCount + bassCount + innerCount + slapCount);
+          : noteCount;
 
         return {
           artist,
           title,
           tier,
-          score,
-          breakdown: { structure, voicing, arrangement, bundle },
           bpm,
           capo,
           bars: barCount,
@@ -11625,8 +11567,7 @@
         const p = buildLibraryTargetPath(
           libArtistInput.value,
           libTitleInput.value,
-          libTierSelect.value,
-          libScoreInput.value
+          libTierSelect.value
         );
         libPathPreviewEl.textContent = "目标路径：" + LIBRARY_REPO_SLUG + "/" + p;
       }
@@ -11662,17 +11603,18 @@
         }
       }
 
-      function populateLibraryPanel(pyText, manifestObj, hasPdf, pngCount) {
-        const a = analyzeScorePython(pyText, manifestObj, hasPdf, pngCount);
-        setValRow("sourcepy", "ok", "score_data.py · 建议 " + a.score + " 分（" + (LIBRARY_TIER_LABELS[a.tier] || a.tier) + "）");
+      function populateLibraryPanel(pyText, manifestObj) {
+        const a = analyzeScorePython(pyText, manifestObj);
+        const tierLabel = LIBRARY_TIER_LABELS[a.tier] || a.tier;
+        setValRow("sourcepy", "ok", "score_data.py · " + tierLabel + " · 最高 " + a.maxFret + " 品");
         libArtistInput.value = a.artist;
         libTitleInput.value = a.title;
         libTierSelect.value = a.tier;
-        libScoreInput.value = String(a.score);
-        libScoreBreakdownEl.textContent =
-          "自动评分 " + a.score + " 分 — 结构 " + a.breakdown.structure + "/30 · 声部 " + a.breakdown.voicing +
-          "/30 · 编配 " + a.breakdown.arrangement + "/25 · 完整包 " + a.breakdown.bundle + "/15" +
-          (a.crossings > 0 ? ("（检测到 " + a.crossings + " 处声部交叉）") : "（0 声部交叉）");
+        const capoStr = a.capo > 0 ? ("Capo " + a.capo) : "标准调弦";
+        libMetaSummaryEl.textContent =
+          "解析结果：" + a.bars + " 小节 · " + a.notes + " 音符 · " + capoStr +
+          " · 最高 " + a.maxFret + " 品 · " +
+          (a.crossings > 0 ? (a.crossings + " 处声部交叉") : "0 声部交叉");
         updateLibPathPreview();
         libSavePanel.classList.remove("hidden");
         runPreDedupHint(pyText, a);
@@ -11681,13 +11623,10 @@
 
       function collectLibraryFormPayload(pyText, analysis) {
         const a = analysis || {};
-        const scoreVal = Math.max(0, Math.min(100, Math.round(Number(libScoreInput.value) || a.score || 80)));
         return {
           artist: libArtistInput.value.trim() || a.artist || "未分类",
           title: libTitleInput.value.trim() || a.title || "Untitled",
           tier: libTierSelect.value || a.tier || "standard",
-          score: scoreVal,
-          autoScore: a.score || scoreVal,
           bpm: a.bpm || 0,
           capo: a.capo || 0,
           bars: a.bars || 0,
@@ -11723,7 +11662,7 @@
 
       async function copySourceAndOpenGitHubPR(payload) {
         const normCode = normalizeScorePyForHash(payload.code);
-        const relPath = buildLibraryTargetPath(payload.artist, payload.title, payload.tier, payload.score);
+        const relPath = buildLibraryTargetPath(payload.artist, payload.title, payload.tier);
         const cat = await fetchCloudCatalog({ allowRawFallback: true });
         const dup = await findDuplicateInCatalog(payload, cat);
         if (dup) {
@@ -11734,7 +11673,7 @@
         }
 
         const tierLabel = LIBRARY_TIER_LABELS[payload.tier] || "标准";
-        const commitMsg = "Add " + payload.artist + "/" + payload.title + " (" + tierLabel + ", " + payload.score + "分)";
+        const commitMsg = "Add " + payload.artist + "/" + payload.title + " (" + tierLabel + ")";
         let ghUrl =
           "https://github.com/" + LIBRARY_REPO_SLUG + "/new/main?filename=" +
           encodeURIComponent(relPath) + "&message=" + encodeURIComponent(commitMsg);
@@ -11764,7 +11703,7 @@
       }
 
       function downloadNormalizedPy(payload) {
-        const relPath = buildLibraryTargetPath(payload.artist, payload.title, payload.tier, payload.score);
+        const relPath = buildLibraryTargetPath(payload.artist, payload.title, payload.tier);
         const fname = relPath.split("/").pop();
         const normCode = normalizeScorePyForHash(payload.code);
         const blob = new Blob([normCode], { type: "text/x-python;charset=utf-8" });
@@ -11855,9 +11794,12 @@
           return;
         }
 
+        const tierOrd = { beginner: 0, standard: 1, advanced: 2 };
         const sortedArtists = Array.from(byArtist.keys()).sort((a, b) => a.localeCompare(b, "zh-CN"));
         for (const artist of sortedArtists) {
-          const songs = byArtist.get(artist).slice().sort((a, b) => (b.score || 0) - (a.score || 0) || String(a.title).localeCompare(String(b.title), "zh-CN"));
+          const songs = byArtist.get(artist).slice().sort(
+            (a, b) => String(a.title).localeCompare(String(b.title), "zh-CN") || ((tierOrd[a.tier] ?? 9) - (tierOrd[b.tier] ?? 9))
+          );
           const groupEl = document.createElement("div");
           groupEl.className = "lib-group";
 
@@ -11887,15 +11829,13 @@
             const tierEl = document.createElement("span");
             tierEl.className = "lib-badge";
             tierEl.textContent = it.tierLabel || LIBRARY_TIER_LABELS[it.tier] || "标准";
-            const scoreEl = document.createElement("span");
-            scoreEl.className = "lib-badge score";
-            scoreEl.textContent = (Number.isFinite(Number(it.score)) ? it.score : 80) + "分";
-            top.append(titleEl, tierEl, scoreEl);
+            top.append(titleEl, tierEl);
 
             const sub = document.createElement("div");
             sub.className = "lib-song-sub";
             const metaParts = [];
             metaParts.push((it.capo || 0) > 0 ? ("Capo " + it.capo) : "标准调弦");
+            if (Number.isFinite(Number(it.maxFret)) && it.maxFret > 0) metaParts.push("最高 " + it.maxFret + " 品");
             if (it.bpm) metaParts.push(it.bpm + " BPM");
             if (it.bars) metaParts.push(it.bars + " 小节");
             if (it.duration) metaParts.push(fmtTime(it.duration));
@@ -11964,7 +11904,7 @@
       });
       libRefreshBtn.addEventListener("click", () => openLibraryModal({ force: true }));
 
-      [libArtistInput, libTitleInput, libTierSelect, libScoreInput].forEach((el) => {
+      [libArtistInput, libTitleInput, libTierSelect].forEach((el) => {
         el.addEventListener("input", updateLibPathPreview);
         el.addEventListener("change", updateLibPathPreview);
       });
