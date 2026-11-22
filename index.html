@@ -100,12 +100,6 @@
       align-items: center;
       gap: 8px;
       min-width: 0;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    .bar-title-wrap.visible {
-      opacity: 1;
     }
 
     .bar-title {
@@ -240,13 +234,7 @@
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 32px 28px;
-    }
-
-    .sheet-header-crop {
-      margin-bottom: 14px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--line);
+      padding: 24px 28px;
     }
 
     .slice-viewport {
@@ -1270,11 +1258,6 @@
       background: transparent;
     }
 
-    body.stage-open .sheet-header-crop {
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-    }
-
     .stage-head {
       display: flex;
       align-items: center;
@@ -1607,7 +1590,6 @@
 
     <div class="sheet-pane" id="sheet-pane">
       <section class="sheet-paper" id="sheet-paper" aria-label="六线谱">
-        <div class="sheet-header-crop" id="sheet-header-crop"></div>
         <div class="systems-flow" id="systems-flow"></div>
       </section>
     </div>
@@ -8209,7 +8191,6 @@
       const sheetWrap = document.getElementById("sheet-wrap");
       const sheetPane = document.getElementById("sheet-pane");
       const sheetPaper = document.getElementById("sheet-paper");
-      const headerCropEl = document.getElementById("sheet-header-crop");
       const systemsFlowEl = document.getElementById("systems-flow");
       const locatePill = document.getElementById("locate-pill");
 
@@ -8284,7 +8265,6 @@
       let rowRefs = [];
       let lastSysIdx = -1;
       let rafId = null;
-      let headerObserver = null;
       let draggingScrub = false;
       const DEFAULT_STAGE_RATIOS = { fretboard: 0.44, highway: 0.66 };
       const stageRatios = { fretboard: 0.44, highway: 0.66 };
@@ -8435,31 +8415,6 @@
         }
       }
 
-      function setupHeaderObserver(hasHeader) {
-        if (headerObserver) {
-          headerObserver.disconnect();
-          headerObserver = null;
-        }
-        if (!hasHeader) {
-          barTitleWrap.classList.add("visible");
-          return;
-        }
-        barTitleWrap.classList.remove("visible");
-        const usePane = Boolean(stageVisible && sheetPane);
-        headerObserver = new IntersectionObserver(
-          (entries) => {
-            const visible = entries[0] && entries[0].isIntersecting;
-            barTitleWrap.classList.toggle("visible", !visible);
-          },
-          {
-            root: usePane ? sheetPane : null,
-            rootMargin: usePane ? "0px" : "-56px 0px 0px 0px",
-            threshold: 0.05
-          }
-        );
-        headerObserver.observe(headerCropEl);
-      }
-
       function updateScrubberMarkers(manifest) {
         scrubMarkers.innerHTML = "";
         const dur = getDuration();
@@ -8486,20 +8441,6 @@
         barLocalChip.classList.toggle("hidden", !isImported);
         menuResetBuiltin.classList.toggle("hidden", !isImported);
         menuCalibrate.classList.toggle("hidden", !activeDetection);
-
-        // Header crop
-        headerCropEl.innerHTML = "";
-        const hasHeader = Boolean(manifest.header && pageUrls[manifest.header.page - 1]);
-        if (hasHeader) {
-          headerCropEl.classList.remove("hidden");
-          const h = manifest.header;
-          headerCropEl.appendChild(
-            createSliceViewport(pageUrls[h.page - 1], h.width, h.sliceY[0], h.sliceY[1])
-          );
-        } else {
-          headerCropEl.classList.add("hidden");
-        }
-        setupHeaderObserver(hasHeader);
 
         // Scrubber section markers
         updateScrubberMarkers(manifest);
@@ -9609,10 +9550,6 @@
         stageToggleBtn.setAttribute("aria-pressed", stageVisible ? "true" : "false");
         if (sheetWrap) {
           sheetWrap.style.setProperty("--stage-ratio", stageRatios[stageMode].toFixed(4));
-        }
-        if (activeManifest) {
-          const hasHeader = Boolean(activeManifest.header && activePageUrls[activeManifest.header.page - 1]);
-          setupHeaderObserver(hasHeader);
         }
         if (stageVisible) {
           syncStageCanvasSize();
