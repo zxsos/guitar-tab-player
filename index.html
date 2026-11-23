@@ -1278,6 +1278,19 @@
       font-family: inherit;
     }
 
+    .lib-search-row select {
+      flex: none;
+      height: 34px;
+      padding: 0 8px;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      color: var(--text);
+      font-size: 12.5px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
     .lib-modal-meta {
       font-size: 11.5px;
       color: var(--muted);
@@ -1387,6 +1400,31 @@
       border: 1px solid var(--line);
       background: #f4f4f5;
       color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lib-badge.lv {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+      color: #3730a3;
+    }
+
+    .lib-badge.score-hi {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #065f46;
+    }
+
+    .lib-badge.score-mid {
+      background: #f4f4f5;
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .lib-badge.score-low {
+      background: #fffbeb;
+      border-color: #fde68a;
+      color: #92400e;
     }
 
     .lib-song-sub {
@@ -2167,6 +2205,12 @@
       </div>
       <div class="lib-search-row">
         <input type="search" id="lib-search-input" placeholder="搜索歌手或曲名" />
+        <select id="lib-sort-select" aria-label="排序方式">
+          <option value="artist">歌手</option>
+          <option value="score">评分</option>
+          <option value="diff-asc">难度↑</option>
+          <option value="diff-desc">难度↓</option>
+        </select>
         <button type="button" class="lib-btn-sm" id="lib-refresh-btn">刷新</button>
       </div>
       <div class="lib-modal-meta" id="lib-modal-meta">加载中…</div>
@@ -8678,6 +8722,7 @@
       const libraryModal = document.getElementById("library-modal");
       const closeLibraryBtn = document.getElementById("close-library-btn");
       const libSearchInput = document.getElementById("lib-search-input");
+      const libSortSelect = document.getElementById("lib-sort-select");
       const libRefreshBtn = document.getElementById("lib-refresh-btn");
       const libModalMeta = document.getElementById("lib-modal-meta");
       const libCatalogList = document.getElementById("lib-catalog-list");
@@ -11416,6 +11461,46 @@
         return "scores/" + safeArtist + "/" + safeTitle + "_" + tierLabel + ".py";
       }
 
+      const GUITAR_SCALE_CM = 65.0;
+
+      function fingerPosCm(absFret) {
+        if (absFret <= 0) return 0;
+        const p0 = GUITAR_SCALE_CM * (1 - Math.pow(2, -(absFret - 1) / 12));
+        const p1 = GUITAR_SCALE_CM * (1 - Math.pow(2, -absFret / 12));
+        return 0.5 * (p0 + p1);
+      }
+
+      function extractCallArgs(text, fnName) {
+        const out = [];
+        const re = new RegExp("\\b" + fnName + "\\s*\\(", "g");
+        let m;
+        while ((m = re.exec(text)) !== null) {
+          let i = m.index + m[0].length;
+          let depth = 1;
+          let quote = "";
+          while (i < text.length && depth > 0) {
+            const ch = text[i];
+            if (quote) {
+              if (ch === "\\" && i + 1 < text.length) {
+                i += 2;
+                continue;
+              }
+              if (ch === quote) quote = "";
+            } else {
+              if (ch === '"' || ch === "'") quote = ch;
+              else if (ch === "(") depth++;
+              else if (ch === ")") depth--;
+            }
+            i++;
+          }
+          if (depth === 0) {
+            out.push(text.slice(m.index + m[0].length, i - 1));
+            re.lastIndex = i;
+          }
+        }
+        return out;
+      }
+
       function analyzeScorePython(pyText, manifestObj) {
         const meta = parseScoreDataPy(pyText);
         const strMatch = (k) => {
@@ -11432,83 +11517,348 @@
           : (manifestObj && Number.isFinite(manifestObj.capo) ? manifestObj.capo : 0);
         const bpm = meta.bpm || (manifestObj && manifestObj.bpm) || 72;
 
-        // Inspect Python notes/techniques directly for tier inference & metrics
+        // Parse Measure -> ev -> n structure for physical hand model & difficulty
+        const barChunks = pyText.split(/m\.append\(\s*Measure\(/).slice(1);
+        const parsedMeasures = [];
         const noteRe = /\bn\(\s*([1-6])\s*,\s*(\d+)(?:\s*,\s*["']([^"']+)["'])?([^)]*)\)/g;
+
+        for (const chunk of barChunks) {
+          const bm = chunk.match(/\bbar\s*=\s*(\d+)/);
+          if (!bm) continue;
+          const bar = parseInt(bm[1], 10);
+          const isPickup = /\bis_pickup\s*=\s*True\b/.test(chunk);
+          const secM = chunk.match(/\bsection\s*=\s*["']([^"']+)["']/);
+          const dynM = chunk.match(/\bdynamic\s*=\s*([0-9.]+)/);
+          const chM = chunk.match(/\bchords\s*=\s*\[([^\]]*)\]/);
+          const hasChords = Boolean(chM && /["'][^"']+["']/.test(chM[1]));
+          const evArgsList = extractCallArgs(chunk, "ev");
+          const events = [];
+          for (const args of evArgsList) {
+            const headM = args.match(/^\s*(\d+)\s*,\s*(\d+)/);
+            if (!headM) continue;
+            const slot = parseInt(headM[1], 10);
+            const dur = Math.max(1, parseInt(headM[2], 10));
+            const rest = /\brest\s*=\s*True\b/.test(args);
+            const arpeggio = /\barpeggio\s*=\s*True\b/.test(args);
+            const linkTech = /\blink_tech\s*=\s*["'][HPS]["']/.test(args);
+            const notes = [];
+            noteRe.lastIndex = 0;
+            let nm;
+            while ((nm = noteRe.exec(args)) !== null) {
+              const opts = nm[4] || "";
+              notes.push({
+                string: parseInt(nm[1], 10),
+                fret: parseInt(nm[2], 10),
+                role: nm[3] || "melody",
+                harmonic: /\bharmonic\s*=\s*True\b/.test(opts),
+                palmMute: /\bpalm_mute\s*=\s*True\b/.test(opts),
+                grace: /\bgrace_from\s*=/.test(opts)
+              });
+            }
+            events.push({ slot, dur, rest, arpeggio, linkTech, notes });
+          }
+          parsedMeasures.push({
+            bar,
+            isPickup,
+            section: secM ? secM[1].trim() : "",
+            dynamic: dynM ? Number(dynM[1]) : 1.0,
+            hasChords,
+            events
+          });
+        }
+
         let maxFret = 0;
         let noteCount = 0;
-        let slapCount = 0;
+        let pitchedCount = 0;
+        let nonRestEvents = 0;
+        let polyEvents = 0;
+        let maxSimul = 0;
         let harmCount = 0;
         let pmCount = 0;
         let graceCount = 0;
-        let nm;
-        while ((nm = noteRe.exec(pyText)) !== null) {
-          noteCount++;
-          const fret = parseInt(nm[2], 10);
-          const role = nm[3] || "melody";
-          const opts = nm[4] || "";
-          const isHarm = /\bharmonic\s*=\s*True\b/.test(opts);
-          if (!isHarm && role !== "slap" && fret > maxFret) maxFret = fret;
-          if (role === "slap") slapCount++;
-          if (isHarm) harmCount++;
-          if (/\bpalm_mute\s*=\s*True\b/.test(opts)) pmCount++;
-          if (/\bgrace_from\s*=/.test(opts)) graceCount++;
+        let slapCount = 0;
+        let linkCount = 0;
+        let arpCount = 0;
+        let sixteenthEvents = 0;
+        let techEvents = 0;
+
+        const spansCm = [];
+        const extremeStretches = [];
+        let hardStretches = 0;
+        const impossibleChords = [];
+        let barreEvents = 0;
+        const awkwardShifts = [];
+        let largeShifts = 0;
+        let shiftTransitions = 0;
+        const shiftVelocities = [];
+
+        let nonPickupBars = 0;
+        let bassBars = 0;
+        let chordBars = 0;
+        let emptyBars = 0;
+        const barSlotSums = [];
+        const barNpsList = [];
+        const distinctBass = new Set();
+        const sections = new Set();
+        const dynamics = new Set();
+
+        const lastBar = parsedMeasures.length ? parsedMeasures[parsedMeasures.length - 1].bar : 0;
+        let activeMel = null;
+        let crossings = 0;
+        let prevAnchorCm = null;
+        let prevMeanFret = null;
+        let elapsedSinceFrettedSlots = 0;
+        let totalSlots = 0;
+        const secPerSlot = (60 / Math.max(30, bpm)) / 4;
+
+        for (const meas of parsedMeasures) {
+          if (meas.section) sections.add(meas.section);
+          dynamics.add(Math.round(meas.dynamic * 100) / 100);
+          if (!meas.isPickup) {
+            nonPickupBars++;
+            if (meas.hasChords) chordBars++;
+            if (!meas.events.length) emptyBars++;
+          }
+          let barHasBass = false;
+          let barPitched = 0;
+          let barDurSum = 0;
+
+          for (let evIdx = 0; evIdx < meas.events.length; evIdx++) {
+            const e = meas.events[evIdx];
+            barDurSum += e.dur;
+            totalSlots += e.dur;
+            if (e.dur === 1) sixteenthEvents++;
+            let evHasTech = false;
+            if (e.arpeggio) { arpCount++; evHasTech = true; }
+            if (e.linkTech) { linkCount++; evHasTech = true; }
+
+            if (e.rest) {
+              activeMel = null;
+              elapsedSinceFrettedSlots += e.dur;
+              continue;
+            }
+            if (!e.notes.length) {
+              elapsedSinceFrettedSlots += e.dur;
+              continue;
+            }
+
+            nonRestEvents++;
+            const pitched = e.notes.filter((nt) => nt.role !== "slap");
+            pitchedCount += pitched.length;
+            barPitched += pitched.length;
+            if (pitched.length >= 2) polyEvents++;
+            if (pitched.length > maxSimul) maxSimul = pitched.length;
+
+            const mels = pitched.filter((nt) => nt.role === "melody");
+            if (mels.length) {
+              if (mels.some((nt) => nt.harmonic)) activeMel = null;
+              else activeMel = Math.max(...mels.map((nt) => LIB_OPEN_TUNING[nt.string] + capo + nt.fret));
+            }
+            const isClosing = meas.bar === lastBar && evIdx === meas.events.length - 1;
+            if (!isClosing && activeMel !== null) {
+              for (const nt of pitched) {
+                if ((nt.role === "bass" || nt.role === "inner") && !nt.harmonic) {
+                  if (LIB_OPEN_TUNING[nt.string] + capo + nt.fret > activeMel) crossings++;
+                }
+              }
+            }
+
+            const frettedMap = new Map();
+            for (const nt of e.notes) {
+              noteCount++;
+              if (!nt.harmonic && nt.role !== "slap") {
+                if (nt.fret > maxFret) maxFret = nt.fret;
+                if (nt.fret > 0) frettedMap.set(nt.string + ":" + nt.fret, [nt.string, nt.fret]);
+              }
+              if (nt.role === "bass") {
+                barHasBass = true;
+                distinctBass.add(LIB_OPEN_TUNING[nt.string] + capo + nt.fret);
+              } else if (nt.role === "slap") {
+                slapCount++;
+                evHasTech = true;
+              }
+              if (nt.harmonic) { harmCount++; evHasTech = true; }
+              if (nt.palmMute) { pmCount++; evHasTech = true; }
+              if (nt.grace) { graceCount++; evHasTech = true; }
+            }
+            if (evHasTech) techEvents++;
+
+            const uniqFretted = Array.from(frettedMap.values());
+            if (uniqFretted.length) {
+              const fretsOnly = uniqFretted.map((x) => x[1]);
+              const minF = Math.min(...fretsOnly);
+              const maxF = Math.max(...fretsOnly);
+              const atMinStrings = uniqFretted.filter((x) => x[1] === minF).map((x) => x[0]);
+              const k = uniqFretted.length;
+              const fingersNeeded = atMinStrings.length >= 2 ? (k - atMinStrings.length + 1) : k;
+              if (fingersNeeded > 4) impossibleChords.push([meas.bar, fingersNeeded]);
+              if (
+                (k >= 4 && atMinStrings.length >= 2) ||
+                (k >= 3 && atMinStrings.length >= 2 && (Math.max(...atMinStrings) - Math.min(...atMinStrings)) >= 2)
+              ) {
+                barreEvents++;
+              }
+              if (maxF > minF) {
+                const span = fingerPosCm(capo + maxF) - fingerPosCm(capo + minF);
+                spansCm.push(span);
+                if (span > 14.5) extremeStretches.push([meas.bar, Math.round(span * 10) / 10, minF, maxF]);
+                else if (span > 12.5) hardStretches++;
+              }
+              const anchor = fretsOnly.reduce((acc, f) => acc + fingerPosCm(capo + f), 0) / fretsOnly.length;
+              const meanF = fretsOnly.reduce((acc, f) => acc + f, 0) / fretsOnly.length;
+              if (prevAnchorCm !== null && prevMeanFret !== null) {
+                const dt = Math.max(0.06, elapsedSinceFrettedSlots * secPerSlot);
+                const shiftCm = Math.abs(anchor - prevAnchorCm);
+                const fjump = Math.abs(meanF - prevMeanFret);
+                shiftTransitions++;
+                shiftVelocities.push(shiftCm / dt);
+                if (fjump >= 4) largeShifts++;
+                if (fjump >= 5 && shiftCm >= 12.0 && dt <= 0.28) {
+                  awkwardShifts.push([meas.bar, Math.round(prevMeanFret), Math.round(meanF), Math.round(dt * 100) / 100]);
+                }
+              }
+              prevAnchorCm = anchor;
+              prevMeanFret = meanF;
+              elapsedSinceFrettedSlots = e.dur;
+            } else {
+              elapsedSinceFrettedSlots += e.dur;
+            }
+          }
+
+          if (!meas.isPickup) {
+            if (barHasBass) bassBars++;
+            if (barDurSum > 0) barSlotSums.push(barDurSum);
+            const barSec = Math.max(0.25, (barDurSum || 16) * secPerSlot);
+            barNpsList.push(barPitched / barSec);
+          }
         }
 
-        const linkMatches = pyText.match(/\blink_tech\s*=\s*["'][HPS]["']/g) || [];
-        const arpMatches = pyText.match(/\barpeggio\s*=\s*True\b/g) || [];
-        const has16th = /\bev\(\s*\d+\s*,\s*1\b/.test(pyText);
         const techVariety = [
-          linkMatches.length > 0,
-          arpMatches.length > 0,
+          linkCount > 0,
+          arpCount > 0,
           harmCount > 0,
           pmCount > 0,
           slapCount > 0,
           graceCount > 0
         ].filter(Boolean).length;
 
+        // 1. Left-hand Playability (0..40)
+        const frettedEventsEst = Math.max(1, shiftTransitions + 1);
+        const excessHard = Math.max(0, hardStretches - Math.floor(frettedEventsEst * 0.05));
+        let playabilityF = 40.0;
+        playabilityF -= Math.min(18.0, impossibleChords.length * 6.0);
+        playabilityF -= Math.min(14.0, extremeStretches.length * 3.5);
+        playabilityF -= Math.min(6.0, excessHard * 0.8);
+        playabilityF -= Math.min(8.0, awkwardShifts.length * 1.5);
+        playabilityF -= Math.min(10.0, crossings * 1.2);
+        if (maxFret > 17) playabilityF -= 2.0;
+        const playabilityPts = Math.max(0, Math.min(40, Math.round(playabilityF)));
+
+        // 2. Arrangement Richness (0..35)
+        const bassRatio = bassBars / Math.max(1, nonPickupBars);
+        const ptsBass = Math.min(9.0, bassRatio * 10.5) + Math.min(2.0, distinctBass.size * 0.4);
+        const avgPoly = pitchedCount / Math.max(1, nonRestEvents);
+        const polyRatio = polyEvents / Math.max(1, nonRestEvents);
+        const ptsPoly = Math.min(6.0, Math.max(0.0, (avgPoly - 1.0) * 8.0)) + Math.min(4.0, polyRatio * 10.0);
+        const ptsTech = Math.min(6.0, techVariety * 1.6) + Math.min(2.0, (techEvents / Math.max(1, nonRestEvents)) * 18.0);
+        const ptsStruct =
+          Math.min(3.0, sections.size * 1.0) +
+          Math.min(2.0, Math.max(0, dynamics.size - 1) * 0.8) +
+          (nonPickupBars >= 16 ? 1.0 : (nonPickupBars >= 8 ? 0.5 : 0.0));
+        const arrangementPts = Math.max(0, Math.min(35, Math.round(ptsBass + ptsPoly + ptsTech + ptsStruct)));
+
+        // 3. Notation Quality (0..25)
+        let alignedRatio = 0.0;
+        let unalignedBars = nonPickupBars;
+        if (barSlotSums.length) {
+          const counts = new Map();
+          for (const s of barSlotSums) counts.set(s, (counts.get(s) || 0) + 1);
+          let domSlots = barSlotSums[0];
+          let domCnt = 0;
+          for (const [k, c] of counts.entries()) {
+            if (c > domCnt) { domCnt = c; domSlots = k; }
+          }
+          const alignedBars = barSlotSums.filter((s) => s === domSlots).length;
+          unalignedBars = Math.max(0, nonPickupBars - alignedBars);
+          alignedRatio = alignedBars / Math.max(1, nonPickupBars);
+        }
+        const chordRatio = chordBars / Math.max(1, nonPickupBars);
+        const hasTitle = Boolean(title && title !== "Untitled");
+        const hasArtist = Boolean(artist && artist !== "未分类");
+        const hasSetup = /^CAPO\s*=/m.test(pyText) || Boolean(meta.arrangerInfo);
+        const ptsMeta = (hasTitle ? 1.5 : 0) + (hasArtist ? 1.5 : 0) + (bpm > 0 ? 1.0 : 0) + (hasSetup ? 1.0 : 0);
+        const ptsClean = Math.max(0.0, 3.0 - emptyBars * 1.0 - (nonPickupBars < 4 ? 1.5 : 0.0));
+        const notationPts = Math.max(
+          0,
+          Math.min(25, Math.round(alignedRatio * 10.0 + Math.min(7.0, chordRatio * 7.8) + ptsMeta + ptsClean))
+        );
+
+        const qualityScore = Math.max(0, Math.min(100, playabilityPts + arrangementPts + notationPts));
+
+        const scoreIssues = [];
+        const fmtBar = (b) => "M" + String(b).padStart(2, "0");
+        if (impossibleChords.length) {
+          const [b0, f0] = impossibleChords[0];
+          scoreIssues.push(fmtBar(b0) + (impossibleChords.length > 1 ? (" 等 " + impossibleChords.length + " 处") : "") + " 同拍需 " + f0 + " 指");
+        }
+        if (extremeStretches.length) {
+          const [b0, sp0, mf0, xf0] = extremeStretches[0];
+          scoreIssues.push(fmtBar(b0) + (extremeStretches.length > 1 ? (" 等 " + extremeStretches.length + " 处") : "") + " 跨度 " + sp0.toFixed(1) + "cm（" + mf0 + "–" + xf0 + "品）");
+        }
+        if (awkwardShifts.length) {
+          const [b0, pf0, nf0, dt0] = awkwardShifts[0];
+          scoreIssues.push(fmtBar(b0) + (awkwardShifts.length > 1 ? (" 等 " + awkwardShifts.length + " 处") : "") + " 快速大跳（" + pf0 + "→" + nf0 + "品，" + dt0.toFixed(2) + "s）");
+        }
+        if (crossings > 0) scoreIssues.push(crossings + " 处声部交叉");
+        if (nonPickupBars >= 4 && bassRatio < 0.5) scoreIssues.push("低音覆盖偏低（" + Math.round(bassRatio * 100) + "%）");
+        if (nonPickupBars >= 4 && chordRatio < 0.5) scoreIssues.push("和弦标记不足（" + Math.round(chordRatio * 100) + "%）");
+        if (unalignedBars > 0) scoreIssues.push(unalignedBars + " 个小节拍数未对齐");
+
+        // 4. Difficulty Index (Lv. 1.0 .. 10.0)
+        const durSec = Math.max(1.0, totalSlots * secPerSlot);
+        const nps = pitchedCount / durSec;
+        const sortedBnps = barNpsList.length ? barNpsList.slice().sort((a, b) => a - b) : [nps];
+        const p90Nps = sortedBnps[Math.min(sortedBnps.length - 1, Math.floor(sortedBnps.length * 0.9))];
+        const effNps = 0.55 * nps + 0.45 * p90Nps;
+        const ratio16th = sixteenthEvents / Math.max(1, nonRestEvents);
+        const dSpeed = Math.min(
+          3.0,
+          Math.max(0.0, (effNps - 1.0) * 0.42) + (ratio16th >= 0.08 ? 0.35 : (sixteenthEvents > 0 ? 0.15 : 0.0))
+        );
+
+        const sortedSpans = spansCm.length ? spansCm.slice().sort((a, b) => a - b) : [0.0];
+        const p95Span = sortedSpans[Math.min(sortedSpans.length - 1, Math.floor(sortedSpans.length * 0.95))];
+        const barreRatio = barreEvents / Math.max(1, nonRestEvents);
+        const dHand = Math.min(
+          2.2,
+          Math.min(1.3, Math.max(0.0, (p95Span - 6.0) * 0.16)) + Math.min(0.9, barreRatio * 4.5)
+        );
+
+        const avgShiftVel = shiftVelocities.reduce((acc, v) => acc + v, 0) / Math.max(1, shiftVelocities.length);
+        const largeShiftRatio = largeShifts / Math.max(1, shiftTransitions);
+        const dNeck = Math.min(
+          1.8,
+          Math.min(0.9, Math.max(0.0, (maxFret - 3) * 0.075)) +
+            Math.min(0.9, largeShiftRatio * 3.0 + Math.min(0.45, avgShiftVel / 25.0))
+        );
+
+        const dPoly = Math.min(1.4, Math.max(0.0, (avgPoly - 1.0) * 1.1) + (maxSimul >= 4 ? 0.3 : 0.0));
+        const dTech = Math.min(1.2, techVariety * 0.18 + Math.min(0.5, (techEvents / Math.max(1, nonRestEvents)) * 2.5));
+        const difficulty = Math.round(Math.min(10.0, Math.max(1.0, 1.0 + dSpeed + dHand + dNeck + dPoly + dTech)) * 10) / 10;
+
         const explicitTier = strMatch("TIER").toLowerCase();
         let tier = ["beginner", "standard", "advanced"].includes(explicitTier) ? explicitTier : "";
         if (!tier) {
-          if (maxFret > 12) {
+          if (difficulty >= 7.0 || maxFret > 12) {
             tier = "advanced";
-          } else if (has16th || techVariety >= 1 || maxFret > 7) {
+          } else if (difficulty >= 3.5 || sixteenthEvents > 0 || techVariety >= 1 || maxFret > 7) {
             tier = "standard";
           } else {
             tier = "beginner";
           }
         }
 
-        // Compute voice crossings from manifest notes (if MIDI-derived)
-        const barEntries = Object.entries(meta.parsedBars);
-        const barCount = Math.max(barEntries.length, (manifestObj && Array.isArray(manifestObj.bars)) ? manifestObj.bars.length : 0);
-        const lastBar = barEntries.length ? Math.max(...barEntries.map(([b]) => parseInt(b, 10))) : Math.max(0, barCount - 1);
-        let crossings = 0;
-
-        if (manifestObj && Array.isArray(manifestObj.notes) && manifestObj.notes.length) {
-          let activeMel = null;
-          const byTime = new Map();
-          for (const nt of manifestObj.notes) {
-            const key = nt.b + "@" + Number(nt.t).toFixed(3);
-            if (!byTime.has(key)) byTime.set(key, { bar: nt.b, list: [] });
-            byTime.get(key).list.push(nt);
-          }
-          for (const group of byTime.values()) {
-            const mels = group.list.filter((x) => x.r === "m");
-            if (mels.length) {
-              if (mels.some((x) => x.h)) activeMel = null;
-              else activeMel = Math.max(...mels.map((x) => LIB_OPEN_TUNING[x.s] + capo + x.f));
-            }
-            if (group.bar < lastBar && activeMel !== null) {
-              for (const x of group.list) {
-                if ((x.r === "b" || x.r === "i") && !x.h) {
-                  const cm = LIB_OPEN_TUNING[x.s] + capo + x.f;
-                  if (cm > activeMel) crossings++;
-                }
-              }
-            }
-          }
-        }
-
+        const barCount = Math.max(parsedMeasures.length, (manifestObj && Array.isArray(manifestObj.bars)) ? manifestObj.bars.length : 0);
         const totalNotes = (manifestObj && Array.isArray(manifestObj.notes) && manifestObj.notes.length)
           ? manifestObj.notes.length
           : noteCount;
@@ -11522,7 +11872,15 @@
           bars: barCount,
           notes: totalNotes,
           maxFret,
-          crossings
+          crossings,
+          qualityScore,
+          scoreBreakdown: {
+            playability: playabilityPts,
+            arrangement: arrangementPts,
+            notation: notationPts
+          },
+          scoreIssues: scoreIssues.slice(0, 5),
+          difficulty
         };
       }
 
@@ -11646,17 +12004,38 @@
         }
       }
 
+      function formatScoreTooltip(breakdown, issues) {
+        const lines = [];
+        if (breakdown && typeof breakdown === "object") {
+          lines.push(
+            "手型 " + (breakdown.playability ?? "-") + "/40 · 编配 " +
+            (breakdown.arrangement ?? "-") + "/35 · 规范 " + (breakdown.notation ?? "-") + "/25"
+          );
+        }
+        if (Array.isArray(issues) && issues.length) {
+          lines.push(issues.join("；"));
+        }
+        return lines.join("\n");
+      }
+
       function populateLibraryPanel(pyText, manifestObj) {
         const a = analyzeScorePython(pyText, manifestObj);
-        const tierLabel = LIBRARY_TIER_LABELS[a.tier] || a.tier;
-        setValRow("sourcepy", "ok", "score_data.py · " + tierLabel + " · 最高 " + a.maxFret + " 品");
+        setValRow("sourcepy", "ok", "score_data.py · " + a.qualityScore + "分 · Lv." + a.difficulty.toFixed(1));
         libArtistInput.value = a.artist;
         libTitleInput.value = a.title;
         libTierSelect.value = a.tier;
         const capoStr = a.capo > 0 ? ("Capo " + a.capo) : "标准调弦";
-        const metaParts = [a.bars + " 小节", a.notes + " 音符", capoStr, "最高 " + a.maxFret + " 品"];
+        const metaParts = [
+          a.qualityScore + "分",
+          "Lv." + a.difficulty.toFixed(1),
+          a.bars + " 小节",
+          a.notes + " 音符",
+          capoStr,
+          "最高 " + a.maxFret + " 品"
+        ];
         if (a.crossings > 0) metaParts.push(a.crossings + " 处声部交叉");
         libMetaSummaryEl.textContent = metaParts.join(" · ");
+        libMetaSummaryEl.title = formatScoreTooltip(a.scoreBreakdown, a.scoreIssues);
         updateLibPathPreview();
         libSavePanel.classList.remove("hidden");
         runPreDedupHint(pyText, a);
@@ -11800,6 +12179,82 @@
         }
       }
 
+      function buildCloudSongRow(it, { showArtist = false } = {}) {
+        const row = document.createElement("div");
+        row.className = "lib-song-row" + (activeCloudSlug && activeCloudSlug === it.slug ? " active" : "");
+        row.setAttribute("role", "button");
+        row.tabIndex = 0;
+        row.setAttribute("aria-label", (it.artist ? it.artist + " - " : "") + (it.title || "Untitled"));
+        row.addEventListener("click", () => loadCloudSong(it));
+        row.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            loadCloudSong(it);
+          }
+        });
+
+        const main = document.createElement("div");
+        main.className = "lib-song-main";
+
+        const top = document.createElement("div");
+        top.className = "lib-song-top";
+        const titleEl = document.createElement("span");
+        titleEl.className = "lib-song-title";
+        titleEl.textContent = showArtist && it.artist ? (it.artist + " · " + (it.title || "Untitled")) : (it.title || "Untitled");
+        const tierEl = document.createElement("span");
+        tierEl.className = "lib-badge";
+        tierEl.textContent = it.tierLabel || LIBRARY_TIER_LABELS[it.tier] || "标准";
+        top.append(titleEl, tierEl);
+
+        if (it.difficulty !== undefined && it.difficulty !== null && Number.isFinite(Number(it.difficulty))) {
+          const lvEl = document.createElement("span");
+          lvEl.className = "lib-badge lv";
+          lvEl.textContent = "Lv." + Number(it.difficulty).toFixed(1);
+          top.appendChild(lvEl);
+        }
+
+        if (it.qualityScore !== undefined && it.qualityScore !== null && Number.isFinite(Number(it.qualityScore))) {
+          const sc = Math.round(Number(it.qualityScore));
+          const scEl = document.createElement("span");
+          scEl.className = "lib-badge " + (sc >= 85 ? "score-hi" : (sc >= 70 ? "score-mid" : "score-low"));
+          scEl.textContent = sc + "分";
+          const tip = formatScoreTooltip(it.scoreBreakdown, it.scoreIssues);
+          if (tip) scEl.title = tip;
+          top.appendChild(scEl);
+        }
+
+        const sub = document.createElement("div");
+        sub.className = "lib-song-sub";
+        const metaParts = [];
+        metaParts.push((it.capo || 0) > 0 ? ("Capo " + it.capo) : "标准调弦");
+        if (Number.isFinite(Number(it.maxFret)) && it.maxFret > 0) metaParts.push("最高 " + it.maxFret + " 品");
+        if (it.bpm) metaParts.push(it.bpm + " BPM");
+        if (it.duration) metaParts.push(fmtTime(it.duration));
+        sub.textContent = metaParts.join(" · ");
+
+        main.append(top, sub);
+        row.appendChild(main);
+
+        if (it.bundleFile && it.songBase) {
+          const acts = document.createElement("div");
+          acts.className = "lib-song-actions";
+          const zipLink = document.createElement("a");
+          zipLink.className = "icon-btn";
+          zipLink.href = LIBRARY_SITE_BASE + encodePathSegments(it.songBase + "/" + it.bundleFile);
+          zipLink.download = it.bundleFile;
+          zipLink.title = "下载曲谱包 (.zip)";
+          zipLink.setAttribute("aria-label", "下载曲谱包");
+          zipLink.innerHTML =
+            '<svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+          zipLink.addEventListener("click", (e) => e.stopPropagation());
+          zipLink.addEventListener("keydown", (e) => e.stopPropagation());
+          acts.appendChild(zipLink);
+          row.appendChild(acts);
+        }
+
+        return row;
+      }
+
       function renderCloudCatalog(catalog, filterText) {
         libCatalogList.innerHTML = "";
         if (!catalog || !Array.isArray(catalog.items)) {
@@ -11818,13 +12273,6 @@
           return hay.includes(q);
         });
 
-        const byArtist = new Map();
-        for (const it of matched) {
-          const artist = it.artist || "未分类";
-          if (!byArtist.has(artist)) byArtist.set(artist, []);
-          byArtist.get(artist).push(it);
-        }
-
         libModalMeta.textContent = q
           ? (matched.length + " / " + catalog.items.length + " 首")
           : (catalog.items.length + " 首");
@@ -11838,11 +12286,46 @@
         }
 
         const frag = document.createDocumentFragment();
+        const sortMode = libSortSelect ? libSortSelect.value : "artist";
         const tierOrd = { beginner: 0, standard: 1, advanced: 2 };
+
+        if (sortMode !== "artist") {
+          const sorted = matched.slice().sort((a, b) => {
+            if (sortMode === "score") {
+              return (Number(b.qualityScore ?? -1) - Number(a.qualityScore ?? -1)) ||
+                String(a.title).localeCompare(String(b.title), "zh-CN");
+            }
+            if (sortMode === "diff-asc") {
+              return (Number(a.difficulty ?? 99) - Number(b.difficulty ?? 99)) ||
+                (Number(b.qualityScore ?? -1) - Number(a.qualityScore ?? -1));
+            }
+            return (Number(b.difficulty ?? -1) - Number(a.difficulty ?? -1)) ||
+              (Number(b.qualityScore ?? -1) - Number(a.qualityScore ?? -1));
+          });
+          const groupEl = document.createElement("div");
+          groupEl.className = "lib-group";
+          for (const it of sorted) {
+            groupEl.appendChild(buildCloudSongRow(it, { showArtist: true }));
+          }
+          frag.appendChild(groupEl);
+          libCatalogList.appendChild(frag);
+          return;
+        }
+
+        const byArtist = new Map();
+        for (const it of matched) {
+          const artist = it.artist || "未分类";
+          if (!byArtist.has(artist)) byArtist.set(artist, []);
+          byArtist.get(artist).push(it);
+        }
+
         const sortedArtists = Array.from(byArtist.keys()).sort((a, b) => a.localeCompare(b, "zh-CN"));
         for (const artist of sortedArtists) {
           const songs = byArtist.get(artist).slice().sort(
-            (a, b) => String(a.title).localeCompare(String(b.title), "zh-CN") || ((tierOrd[a.tier] ?? 9) - (tierOrd[b.tier] ?? 9))
+            (a, b) =>
+              String(a.title).localeCompare(String(b.title), "zh-CN") ||
+              ((tierOrd[a.tier] ?? 9) - (tierOrd[b.tier] ?? 9)) ||
+              (Number(b.qualityScore ?? -1) - Number(a.qualityScore ?? -1))
           );
           const groupEl = document.createElement("div");
           groupEl.className = "lib-group";
@@ -11858,62 +12341,7 @@
           groupEl.appendChild(headEl);
 
           for (const it of songs) {
-            const row = document.createElement("div");
-            row.className = "lib-song-row" + (activeCloudSlug && activeCloudSlug === it.slug ? " active" : "");
-            row.setAttribute("role", "button");
-            row.tabIndex = 0;
-            row.setAttribute("aria-label", (it.artist ? it.artist + " - " : "") + (it.title || "Untitled"));
-            row.addEventListener("click", () => loadCloudSong(it));
-            row.addEventListener("keydown", (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                loadCloudSong(it);
-              }
-            });
-
-            const main = document.createElement("div");
-            main.className = "lib-song-main";
-
-            const top = document.createElement("div");
-            top.className = "lib-song-top";
-            const titleEl = document.createElement("span");
-            titleEl.className = "lib-song-title";
-            titleEl.textContent = it.title || "Untitled";
-            const tierEl = document.createElement("span");
-            tierEl.className = "lib-badge";
-            tierEl.textContent = it.tierLabel || LIBRARY_TIER_LABELS[it.tier] || "标准";
-            top.append(titleEl, tierEl);
-
-            const sub = document.createElement("div");
-            sub.className = "lib-song-sub";
-            const metaParts = [];
-            metaParts.push((it.capo || 0) > 0 ? ("Capo " + it.capo) : "标准调弦");
-            if (Number.isFinite(Number(it.maxFret)) && it.maxFret > 0) metaParts.push("最高 " + it.maxFret + " 品");
-            if (it.bpm) metaParts.push(it.bpm + " BPM");
-            if (it.duration) metaParts.push(fmtTime(it.duration));
-            sub.textContent = metaParts.join(" · ");
-
-            main.append(top, sub);
-            row.appendChild(main);
-
-            if (it.bundleFile && it.songBase) {
-              const acts = document.createElement("div");
-              acts.className = "lib-song-actions";
-              const zipLink = document.createElement("a");
-              zipLink.className = "icon-btn";
-              zipLink.href = LIBRARY_SITE_BASE + encodePathSegments(it.songBase + "/" + it.bundleFile);
-              zipLink.download = it.bundleFile;
-              zipLink.title = "下载曲谱包 (.zip)";
-              zipLink.setAttribute("aria-label", "下载曲谱包");
-              zipLink.innerHTML =
-                '<svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-              zipLink.addEventListener("click", (e) => e.stopPropagation());
-              zipLink.addEventListener("keydown", (e) => e.stopPropagation());
-              acts.appendChild(zipLink);
-              row.appendChild(acts);
-            }
-
-            groupEl.appendChild(row);
+            groupEl.appendChild(buildCloudSongRow(it));
           }
 
           frag.appendChild(groupEl);
@@ -11951,6 +12379,9 @@
         libSearchTimer = setTimeout(() => {
           renderCloudCatalog(cloudCatalogCache, libSearchInput.value);
         }, 120);
+      });
+      libSortSelect.addEventListener("change", () => {
+        renderCloudCatalog(cloudCatalogCache, libSearchInput.value);
       });
       libRefreshBtn.addEventListener("click", () => openLibraryModal({ force: true }));
 
