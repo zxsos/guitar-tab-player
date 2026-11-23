@@ -1919,9 +1919,9 @@
           <span class="pill-label">导入</span>
         </button>
 
-        <button type="button" class="pill-btn hidden" id="topbar-save-lib-btn" title="提交到谱库" aria-label="提交到谱库">
+        <button type="button" class="pill-btn hidden" id="topbar-save-lib-btn" title="保存到曲库" aria-label="保存到曲库">
           <svg class="ico" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          <span class="pill-label">提 PR</span>
+          <span class="pill-label">入库</span>
         </button>
 
         <button type="button" class="icon-btn" id="open-pdf-btn" title="原版 PDF" aria-label="原版 PDF">
@@ -2178,7 +2178,7 @@
         <div class="lib-actions">
           <div class="lib-action-btns">
             <button type="button" class="lib-btn-sm" id="lib-download-py-btn">下载 .py</button>
-            <button type="button" class="lib-btn-sm primary" id="lib-pr-btn">提交 PR</button>
+            <button type="button" class="lib-btn-sm primary" id="lib-pr-btn">提交曲库</button>
           </div>
         </div>
         <div class="lib-status hidden" id="lib-status"></div>
@@ -8743,8 +8743,10 @@
         : "https://zxsos.github.io/guitar-tab-library/";
       const LIBRARY_CATALOG_URL = LIBRARY_SITE_BASE + "catalog.json";
       const LIBRARY_RAW_INDEX_URL = "https://raw.githubusercontent.com/zxsos/guitar-tab-library/main/index.json";
+      const LIBRARY_RELAY_URL = "https://guitar-tab-library-relay.zcsos.workers.dev/submit";
       const LIBRARY_REPO_SLUG = "zxsos/guitar-tab-library";
       const LIBRARY_TIER_LABELS = { beginner: "新手", standard: "标准", advanced: "进阶" };
+      const submittedScoreHashes = new Set();
 
       const pdfModal = document.getElementById("pdf-modal");
       const pdfIframe = document.getElementById("pdf-iframe");
@@ -11323,12 +11325,15 @@
         setMedia(audioUrl, pdfUrl, pdfFile ? pdfFile.name : "", audioFile.name);
         renderManifest(manifest, orderedPageUrls);
         if (scoreDataText) {
+          const analysis = scoreAnalysis || analyzeScorePython(scoreDataText, manifest);
+          const payload = collectLibraryFormPayload(scoreDataText, analysis);
           activeLibraryState = {
             code: scoreDataText,
-            analysis: scoreAnalysis || analyzeScorePython(scoreDataText, manifest, Boolean(pdfFile), pngFiles.length),
-            payload: collectLibraryFormPayload(scoreDataText, scoreAnalysis)
+            analysis,
+            payload
           };
           topbarSaveLibBtn.classList.remove("hidden");
+          submitToLibraryRelay(payload, { silent: true });
         } else {
           activeLibraryState = null;
           topbarSaveLibBtn.classList.add("hidden");
@@ -12052,74 +12057,93 @@
           capo: a.capo || 0,
           bars: a.bars || 0,
           notes: a.notes || 0,
+          qualityScore: a.qualityScore,
+          difficulty: a.difficulty,
           code: pyText,
         };
       }
 
-      async function copyTextSafe(text) {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          try {
-            await navigator.clipboard.writeText(text);
-            return true;
-          } catch {
-            // Fall back to textarea copy below
-          }
-        }
-        try {
-          const ta = document.createElement("textarea");
-          ta.value = text;
-          ta.setAttribute("readonly", "");
-          ta.style.position = "fixed";
-          ta.style.opacity = "0";
-          document.body.appendChild(ta);
-          ta.select();
-          const ok = document.execCommand("copy");
-          ta.remove();
-          return Boolean(ok);
-        } catch {
-          return false;
-        }
-      }
-
-      async function copySourceAndOpenGitHubPR(payload) {
+      let libSubmitting = false;
+      async function submitToLibraryRelay(payload, { silent = false } = {}) {
+        if (!payload || !payload.code) return;
         const normCode = normalizeScorePyForHash(payload.code);
-        const relPath = buildLibraryTargetPath(payload.artist, payload.title, payload.tier);
-        const cat = await fetchCloudCatalog({ allowRawFallback: true });
-        const dup = await findDuplicateInCatalog(payload, cat);
-        if (dup) {
-          const dupUrl = dup.githubUrl || ("https://github.com/" + LIBRARY_REPO_SLUG + "/blob/main/" + encodePathSegments(dup.path));
-          setLibStatus("ok", "曲库已收录：", dupUrl, "查看文件");
-          showToast("曲库已有相同源码");
+        const hash = await sha256HexClient(normCode);
+        if (hash && submittedScoreHashes.has(hash)) {
+          if (!silent) showToast("已提交过该源码");
           return;
         }
 
-        const tierLabel = LIBRARY_TIER_LABELS[payload.tier] || "标准";
-        const commitMsg = "Add " + payload.artist + "/" + payload.title + " (" + tierLabel + ")";
-        let ghUrl =
-          "https://github.com/" + LIBRARY_REPO_SLUG + "/new/main?filename=" +
-          encodeURIComponent(relPath) + "&message=" + encodeURIComponent(commitMsg);
-        const encVal = encodeURIComponent(normCode);
-        if (encVal.length <= 5500) {
-          ghUrl += "&value=" + encVal;
+        const cat = await fetchCloudCatalog({ allowRawFallback: true });
+        const dup = await findDuplicateInCatalog(payload, cat);
+        if (dup) {
+          if (hash) submittedScoreHashes.add(hash);
+          if (!silent) {
+            const dupUrl = dup.githubUrl || ("https://github.com/" + LIBRARY_REPO_SLUG + "/blob/main/" + encodePathSegments(dup.path));
+            setLibStatus("ok", "曲库已收录：", dupUrl, "查看文件");
+            showToast("曲库已有相同源码");
+          }
+          return;
         }
 
-        const copied = await copyTextSafe(normCode);
-        window.open(ghUrl, "_blank", "noopener");
-        if (copied) {
-          setLibStatus(
-            "ok",
-            "源码已复制，在 GitHub 粘贴并提交 PR：",
-            ghUrl,
-            "打开 GitHub"
-          );
-          showToast("源码已复制，请在 GitHub 创建 PR");
-        } else {
-          setLibStatus(
-            "warn",
-            "请点击「下载 .py」后在 GitHub 提交 PR：",
-            ghUrl,
-            "前往 GitHub"
-          );
+        if (libSubmitting) return;
+        libSubmitting = true;
+        if (!silent) {
+          libPrBtn.disabled = true;
+          libPrBtn.textContent = "提交中…";
+          setLibStatus("", "正在提交…");
+        }
+
+        try {
+          const resp = await fetch(LIBRARY_RELAY_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              artist: payload.artist,
+              title: payload.title,
+              tier: payload.tier,
+              qualityScore: payload.qualityScore,
+              difficulty: payload.difficulty,
+              code: normCode,
+            }),
+            keepalive: silent,
+          });
+          const data = await resp.json().catch(() => null);
+          if (!resp.ok || !data || !data.ok) {
+            const errMsg = (data && data.error) || ("HTTP " + resp.status);
+            if (!silent) {
+              setLibStatus("err", "提交失败：" + errMsg);
+              showToast("提交失败：" + errMsg, { type: "error", duration: 4000 });
+            }
+            return;
+          }
+
+          if (hash) submittedScoreHashes.add(hash);
+          if (data.status === "pr_created") {
+            setLibStatus("ok", "已提交审核（PR #" + data.prNumber + "）：", data.prUrl, "查看 PR");
+            showToast(silent ? "已自动提交曲谱至曲库审核" : ("已提交审核（PR #" + data.prNumber + "）"), { duration: 3500 });
+          } else if (data.status === "pr_exists") {
+            if (!silent) {
+              setLibStatus("ok", "已在审核队列（PR #" + data.prNumber + "）：", data.prUrl, "查看 PR");
+              showToast("该曲谱已在审核中");
+            }
+          } else if (data.status === "duplicate") {
+            if (!silent) {
+              setLibStatus("ok", "曲库已收录：", data.url, "查看文件");
+              showToast("曲库已有相同源码");
+            }
+          }
+        } catch (err) {
+          if (!silent) {
+            const msg = err && err.message ? err.message : "网络错误";
+            setLibStatus("err", "提交失败：" + msg);
+            showToast("提交失败：" + msg, { type: "error", duration: 4000 });
+          }
+        } finally {
+          libSubmitting = false;
+          if (!silent) {
+            libPrBtn.disabled = false;
+            libPrBtn.textContent = "提交曲库";
+          }
         }
       }
 
@@ -12405,18 +12429,13 @@
         if (activeLibraryState && (!stagedReady || !stagedReady.scoreDataText)) {
           activeLibraryState.payload = payload;
         }
-        copySourceAndOpenGitHubPR(payload);
+        submitToLibraryRelay(payload, { silent: false });
       });
 
       topbarSaveLibBtn.addEventListener("click", () => {
         if (!activeLibraryState) return;
         valPanel.classList.remove("hidden");
-        populateLibraryPanel(
-          activeLibraryState.code,
-          activeManifest,
-          Boolean(pdfIframe.dataset.src),
-          activePageUrls.length
-        );
+        populateLibraryPanel(activeLibraryState.code, activeManifest);
         openImportModal();
         setTimeout(() => libSavePanel.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
       });
