@@ -11965,8 +11965,8 @@
         const playBtn = document.createElement("button");
         playBtn.type = "button";
         playBtn.className = "icon-btn lib-play-btn";
-        playBtn.title = "直接练习";
-        playBtn.setAttribute("aria-label", "直接练习");
+        playBtn.title = "点击在线使用";
+        playBtn.setAttribute("aria-label", "点击在线使用");
         playBtn.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/></svg>';
         playBtn.addEventListener("click", (e) => {
           e.stopPropagation();
@@ -11996,9 +11996,9 @@
           return hay.includes(q);
         });
 
-        libModalMeta.textContent = q
-          ? (matched.length + " / " + catalog.items.length + " 首")
-          : (catalog.items.length + " 首");
+        libModalMeta.textContent =
+          (q ? (matched.length + " / " + catalog.items.length + " 首") : (catalog.items.length + " 首")) +
+          " · 点击曲目在线使用";
 
         if (!matched.length) {
           const empty = document.createElement("div");
