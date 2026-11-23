@@ -1671,6 +1671,138 @@
       background: rgba(24, 24, 29, 0.92);
     }
 
+    /* Native Lossless AlphaTab Host */
+    .alphatab-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .at-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .at-toolbar-left,
+    .at-toolbar-right {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .at-badge {
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .at-fmt-chip {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      background: #ffffff;
+      border: 1px solid var(--line);
+      padding: 2px 7px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .at-track-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+    }
+
+    .at-track-select {
+      font-size: 12px;
+      color: var(--text);
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 3px 8px;
+      max-width: 220px;
+      cursor: pointer;
+    }
+
+    .at-synth-status {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .at-synth-status.ready {
+      color: #059669;
+    }
+
+    .at-synth-status.err {
+      color: #dc2626;
+    }
+
+    .at-btn {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.14s ease, border-color 0.14s ease;
+    }
+
+    .at-btn:hover {
+      background: #f4f4f5;
+      border-color: #d4d4d8;
+    }
+
+    .at-viewport {
+      width: 100%;
+      min-height: 240px;
+      position: relative;
+      background: #ffffff;
+      border-radius: 8px;
+    }
+
+    .at-viewport .at-surface {
+      margin: 0 auto;
+    }
+
+    .at-cursor-bar {
+      background: rgba(99, 102, 241, 0.10);
+      border-radius: 4px;
+    }
+
+    .at-cursor-beat {
+      background: rgba(99, 102, 241, 0.88);
+      width: 2.5px;
+      border-radius: 2px;
+    }
+
+    .at-highlight * {
+      fill: var(--accent, #6366f1);
+      stroke: var(--accent, #6366f1);
+    }
+
+    .at-selection div {
+      background: rgba(99, 102, 241, 0.14);
+    }
+
     .hidden-input,
     .hidden {
       display: none !important;
@@ -1878,7 +2010,7 @@
   </header>
 
   <input type="file" id="dir-input" class="hidden-input" webkitdirectory directory multiple />
-  <input type="file" id="files-input" class="hidden-input" multiple accept=".zip,application/zip,application/x-zip-compressed,.mp3,.wav,.m4a,.ogg,.png,.json,.py,.pdf" />
+  <input type="file" id="files-input" class="hidden-input" multiple accept=".zip,application/zip,application/x-zip-compressed,.gp,.gp3,.gp4,.gp5,.gpx,.mxl,.musicxml,.xml,.atex,.alphatex,.mp3,.wav,.m4a,.ogg,.png,.json,.py,.pdf" />
 
   <main class="sheet-wrap" id="sheet-wrap">
     <section class="stage-dock" id="stage-dock" aria-label="实时弹奏演示">
@@ -1917,6 +2049,23 @@
     <div class="sheet-pane" id="sheet-pane">
       <section class="sheet-paper" id="sheet-paper" aria-label="六线谱">
         <div class="systems-flow" id="systems-flow"></div>
+        <div class="alphatab-shell hidden" id="alphatab-shell">
+          <div class="at-toolbar" id="at-toolbar">
+            <div class="at-toolbar-left">
+              <span class="at-badge">无损矢量直读</span>
+              <span class="at-fmt-chip" id="at-fmt-chip">TAB</span>
+              <label class="at-track-wrap hidden" id="at-track-wrap">
+                <span>音轨</span>
+                <select id="at-track-select" class="at-track-select" aria-label="选择演奏音轨"></select>
+              </label>
+            </div>
+            <div class="at-toolbar-right">
+              <span class="at-synth-status" id="at-synth-status">初始化音源…</span>
+              <button type="button" class="at-btn" id="at-print-btn" title="打印或另存为矢量 PDF">打印谱面</button>
+            </div>
+          </div>
+          <div class="at-viewport" id="alphatab-viewport"></div>
+        </div>
       </section>
     </div>
   </main>
@@ -2008,7 +2157,7 @@
       </div>
 
       <div class="import-hint">
-        推荐直接拖入或选择 Skill 生成的 <strong>.zip 产物包</strong>（包含 <code>sync_manifest.json</code>、<code>*.mp3</code>、<code>previews/page-*.png</code>、可选 <code>*.pdf</code>），也支持直接选入作品文件夹或散文件。
+        支持两类乐谱直读：<strong>① 行业原谱无损直读</strong>（直接拖入 <code>.gp</code> / <code>.gp3</code>–<code>.gp5</code> / <code>.gpx</code> / <code>.musicxml</code> / <code>.mxl</code> / <code>.atex</code>，原生矢量渲染 + 实时吉他音源 + 同步指板与下落轨道）；<strong>② Skill 产物包</strong>（<code>.zip</code> / 文件夹 / 散文件）。
         <a href="https://raw.githubusercontent.com/zxsos/fingerstyle-guitar-tab-skill/main/examples/call-of-silence/Call_of_Silence_bundle.zip" download>下载示例 ZIP</a>
       </div>
 
@@ -2016,11 +2165,11 @@
         <span class="dz-icon" aria-hidden="true">
           <svg class="ico" style="width:26px;height:26px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </span>
-        <p class="dz-text">拖拽 .zip / 文件夹到此处、Ctrl+V 粘贴，或点击选择文件</p>
+        <p class="dz-text">拖拽 .gp / .gp5 / .musicxml / .atex / .zip / 文件夹到此处，或点击选择</p>
         <div class="dz-btns">
           <button type="button" class="pill-btn" id="pick-files-btn">
             <svg class="ico" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-            选择 ZIP / 文件
+            选择曲谱 / ZIP
           </button>
           <button type="button" class="pill-btn" id="pick-dir-btn">
             <svg class="ico" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -8542,6 +8691,13 @@
       const sheetPane = document.getElementById("sheet-pane");
       const sheetPaper = document.getElementById("sheet-paper");
       const systemsFlowEl = document.getElementById("systems-flow");
+      const alphaTabShell = document.getElementById("alphatab-shell");
+      const alphaTabViewport = document.getElementById("alphatab-viewport");
+      const atFmtChip = document.getElementById("at-fmt-chip");
+      const atTrackWrap = document.getElementById("at-track-wrap");
+      const atTrackSelect = document.getElementById("at-track-select");
+      const atSynthStatus = document.getElementById("at-synth-status");
+      const atPrintBtn = document.getElementById("at-print-btn");
       const locatePill = document.getElementById("locate-pill");
 
       const stageToggleBtn = document.getElementById("stage-toggle-btn");
@@ -8647,6 +8803,42 @@
       let stageMaxDur = 2;
       let draggingSplitter = false;
 
+      // Native Lossless AlphaTab Engine State (lazy-loaded on demand)
+      const NATIVE_TAB_RE = /\.(gp|gp3|gp4|gp5|gpx|mxl|musicxml|xml|atex|alphatex)$/i;
+      const ALPHATAB_CDN_BASES = [
+        "https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.9.0/dist/",
+        "https://unpkg.com/@coderline/alphatab@1.9.0/dist/"
+      ];
+      let isAlphaTabMode = false;
+      let alphaApi = null;
+      let alphaScore = null;
+      let alphaTrackIdx = 0;
+      let alphaPlaying = false;
+      let alphaReady = false;
+      let alphaDurationSec = 0;
+      let alphaCurrentSec = 0;
+      let alphaAnchorSec = 0;
+      let alphaAnchorWallMs = 0;
+      let alphaSourceFile = null;
+      let alphaLoadPromise = null;
+      let alphaCdnBase = ALPHATAB_CDN_BASES[0];
+
+      function isPlaybackPlaying() {
+        return isAlphaTabMode ? alphaPlaying : (!player.paused && !player.ended);
+      }
+
+      function getCurrentTimeSec() {
+        if (isAlphaTabMode) {
+          if (alphaPlaying && alphaAnchorWallMs > 0) {
+            const elapsed = ((performance.now() - alphaAnchorWallMs) / 1000) * playbackRate;
+            const est = alphaAnchorSec + Math.max(0, elapsed);
+            return alphaDurationSec > 0 ? Math.min(alphaDurationSec, est) : est;
+          }
+          return alphaCurrentSec;
+        }
+        return player.currentTime || 0;
+      }
+
       function fmtTime(sec) {
         const s = Math.max(0, Math.floor(sec));
         const m = Math.floor(s / 60);
@@ -8655,6 +8847,10 @@
       }
 
       function getDuration() {
+        if (isAlphaTabMode) {
+          if (alphaDurationSec > 0) return alphaDurationSec;
+          return activeManifest && activeManifest.duration ? activeManifest.duration : 0;
+        }
         if (Number.isFinite(player.duration) && player.duration > 0) return player.duration;
         return activeManifest && activeManifest.duration ? activeManifest.duration : 0;
       }
@@ -8684,6 +8880,13 @@
         const clamped = Math.max(0.25, Math.min(1.5, Math.round(rate * 100) / 100));
         playbackRate = clamped;
         player.playbackRate = clamped;
+        if (isAlphaTabMode && alphaApi) {
+          alphaAnchorSec = getCurrentTimeSec();
+          alphaAnchorWallMs = performance.now();
+          try {
+            alphaApi.playbackSpeed = clamped;
+          } catch (_err) {}
+        }
         speedSlider.value = String(clamped);
         const pct = ((clamped - 0.25) / (1.5 - 0.25)) * 100;
         speedSlider.style.background =
@@ -8753,7 +8956,7 @@
       }
 
       function updatePlayIcon() {
-        const playing = !player.paused && !player.ended;
+        const playing = isPlaybackPlaying();
         playIcon.classList.toggle("hidden", playing);
         pauseIcon.classList.toggle("hidden", !playing);
       }
@@ -8762,6 +8965,7 @@
         player.pause();
         stopRaf();
         locatePill.classList.remove("visible");
+        menuDlMp3.classList.remove("hidden");
         player.src = audioUrl;
         player.load();
         player.playbackRate = playbackRate;
@@ -8927,7 +9131,7 @@
 
       function setFollowPaused(paused) {
         followPaused = paused;
-        locatePill.classList.toggle("visible", paused && !player.paused);
+        locatePill.classList.toggle("visible", !isAlphaTabMode && paused && isPlaybackPlaying());
       }
 
       function scrollToSystem(sysIdx, force) {
@@ -8974,6 +9178,18 @@
         const dur = getDuration();
         const clamped = Math.max(0, Math.min(dur, targetSec));
         if (resumeFollow) setFollowPaused(false);
+        if (isAlphaTabMode) {
+          alphaCurrentSec = clamped;
+          alphaAnchorSec = clamped;
+          alphaAnchorWallMs = performance.now();
+          if (alphaApi) {
+            try {
+              alphaApi.timePosition = Math.round(clamped * 1000);
+            } catch (_err) {}
+          }
+          renderSync(clamped);
+          return;
+        }
         player.currentTime = clamped;
         const state = findPlaybackState(clamped);
         lastSysIdx = state.sys.sysIdx;
@@ -8997,6 +9213,11 @@
           scrubFill.style.width = pct.toFixed(3) + "%";
           scrubThumb.style.left = pct.toFixed(3) + "%";
           scrubber.setAttribute("aria-valuenow", String(Math.round(pct)));
+        }
+
+        if (isAlphaTabMode) {
+          renderPlayStage(t, bar);
+          return;
         }
 
         rowRefs.forEach((ref, idx) => {
@@ -9939,13 +10160,13 @@
           btn.setAttribute("aria-selected", isAct ? "true" : "false");
         });
         applyStageLayout();
-        renderSync(player.currentTime || 0);
-        if (stageVisible && activeManifest && (hasStarted || !player.paused) && !followPaused) {
+        renderSync(getCurrentTimeSec());
+        if (stageVisible && activeManifest && (hasStarted || isPlaybackPlaying()) && !followPaused) {
           requestAnimationFrame(() => {
             if (!activeManifest) return;
             syncStageCanvasSize();
-            renderSync(player.currentTime || 0);
-            scrollToSystem(findPlaybackState(player.currentTime || 0).sys.sysIdx, true);
+            renderSync(getCurrentTimeSec());
+            if (!isAlphaTabMode) scrollToSystem(findPlaybackState(getCurrentTimeSec()).sys.sysIdx, true);
           });
         }
       }
@@ -9954,14 +10175,20 @@
         stageVisible = Boolean(vis);
         programmaticScrollUntil = performance.now() + 600;
         applyStageLayout();
-        if (stageVisible) {
-          renderSync(player.currentTime || 0);
+        if (isAlphaTabMode && alphaApi) {
+          try {
+            alphaApi.settings.player.scrollElement = stageVisible && sheetPane ? sheetPane : document.documentElement;
+            alphaApi.updateSettings();
+          } catch (_err) {}
         }
-        if (activeManifest && (hasStarted || !player.paused) && !followPaused) {
+        if (stageVisible) {
+          renderSync(getCurrentTimeSec());
+        }
+        if (activeManifest && (hasStarted || isPlaybackPlaying()) && !followPaused) {
           requestAnimationFrame(() => {
             if (!activeManifest) return;
             if (stageVisible) syncStageCanvasSize();
-            scrollToSystem(findPlaybackState(player.currentTime || 0).sys.sysIdx, true);
+            if (!isAlphaTabMode) scrollToSystem(findPlaybackState(getCurrentTimeSec()).sys.sysIdx, true);
           });
         }
       }
@@ -9979,7 +10206,7 @@
           stageRatios[stageMode] = ratio;
           sheetWrap.style.setProperty("--stage-ratio", ratio.toFixed(4));
           syncStageCanvasSize();
-          renderSync(player.currentTime || 0);
+          renderSync(getCurrentTimeSec());
         };
 
         stageSplitter.addEventListener("pointerdown", (e) => {
@@ -10001,10 +10228,10 @@
           if (!draggingSplitter) return;
           draggingSplitter = false;
           stageSplitter.classList.remove("dragging");
-          if (activeManifest && (hasStarted || !player.paused) && !followPaused) {
+          if (activeManifest && !isAlphaTabMode && (hasStarted || isPlaybackPlaying()) && !followPaused) {
             requestAnimationFrame(() => {
               if (!activeManifest) return;
-              scrollToSystem(findPlaybackState(player.currentTime || 0).sys.sysIdx, true);
+              scrollToSystem(findPlaybackState(getCurrentTimeSec()).sys.sysIdx, true);
             });
           }
         };
@@ -10014,11 +10241,11 @@
         stageSplitter.addEventListener("dblclick", () => {
           stageRatios[stageMode] = DEFAULT_STAGE_RATIOS[stageMode];
           applyStageLayout();
-          renderSync(player.currentTime || 0);
-          if (activeManifest && (hasStarted || !player.paused) && !followPaused) {
+          renderSync(getCurrentTimeSec());
+          if (activeManifest && !isAlphaTabMode && (hasStarted || isPlaybackPlaying()) && !followPaused) {
             requestAnimationFrame(() => {
               if (!activeManifest) return;
-              scrollToSystem(findPlaybackState(player.currentTime || 0).sys.sysIdx, true);
+              scrollToSystem(findPlaybackState(getCurrentTimeSec()).sys.sysIdx, true);
             });
           }
         });
@@ -10032,14 +10259,14 @@
       window.addEventListener("resize", () => {
         if (stageVisible) {
           syncStageCanvasSize();
-          renderSync(player.currentTime || 0);
+          renderSync(getCurrentTimeSec());
         }
       });
       if (typeof ResizeObserver !== "undefined" && stageCanvas) {
         new ResizeObserver(() => {
           if (stageVisible) {
             syncStageCanvasSize();
-            renderSync(player.currentTime || 0);
+            renderSync(getCurrentTimeSec());
           }
         }).observe(stageCanvas);
       }
@@ -10047,8 +10274,8 @@
       function startRaf() {
         if (rafId !== null) return;
         const tick = () => {
-          renderSync(player.currentTime || 0);
-          if (!player.paused && !player.ended) {
+          renderSync(getCurrentTimeSec());
+          if (isPlaybackPlaying()) {
             rafId = requestAnimationFrame(tick);
           } else {
             rafId = null;
@@ -10067,6 +10294,15 @@
       // Player Controls
       playBtn.addEventListener("click", () => {
         markStarted();
+        if (isAlphaTabMode) {
+          if (!alphaApi) return;
+          if (!alphaReady) {
+            showToast("正在加载吉他音源，请稍候…", { duration: 2500 });
+            return;
+          }
+          alphaApi.playPause();
+          return;
+        }
         if (player.paused || player.ended) {
           setFollowPaused(false);
           const state = findPlaybackState(player.currentTime || 0);
@@ -10078,11 +10314,11 @@
       });
 
       document.getElementById("seek-back").addEventListener("click", () => {
-        seekToTime((player.currentTime || 0) - 5, true);
+        seekToTime(getCurrentTimeSec() - 5, true);
       });
 
       document.getElementById("seek-fwd").addEventListener("click", () => {
-        seekToTime((player.currentTime || 0) + 5, true);
+        seekToTime(getCurrentTimeSec() + 5, true);
       });
 
       speedBtn.addEventListener("click", (e) => {
@@ -10162,10 +10398,10 @@
       scrubber.addEventListener("keydown", (e) => {
         if (e.key === "ArrowLeft") {
           e.preventDefault();
-          seekToTime((player.currentTime || 0) - 5, true);
+          seekToTime(getCurrentTimeSec() - 5, true);
         } else if (e.key === "ArrowRight") {
           e.preventDefault();
-          seekToTime((player.currentTime || 0) + 5, true);
+          seekToTime(getCurrentTimeSec() + 5, true);
         }
       });
 
@@ -10703,10 +10939,10 @@
           playBtn.click();
         } else if (e.key === "ArrowLeft" && e.target !== scrubber) {
           e.preventDefault();
-          seekToTime((player.currentTime || 0) - 5, true);
+          seekToTime(getCurrentTimeSec() - 5, true);
         } else if (e.key === "ArrowRight" && e.target !== scrubber) {
           e.preventDefault();
-          seekToTime((player.currentTime || 0) + 5, true);
+          seekToTime(getCurrentTimeSec() + 5, true);
         } else if (e.key === "[") {
           e.preventDefault();
           setSpeed(playbackRate - 0.05);
@@ -10963,7 +11199,25 @@
         const scoreDataFile = files.find((f) => f.name === "score_data.py") || null;
         const buildPdfFile = files.find((f) => f.name === "build_pdf.py") || null;
         const pdfFile = files.find((f) => /\.pdf$/i.test(f.name)) || null;
+        const nativeScoreFile = files.find((f) => NATIVE_TAB_RE.test(f.name)) || null;
         const scoreDataText = scoreDataFile ? await scoreDataFile.text() : "";
+
+        // Lossless Native Tab Direct Mode (.gp/.gp3-.gp5/.gpx/.mxl/.musicxml/.xml/.atex)
+        if (nativeScoreFile && !(audioFile && pngFiles.length)) {
+          const ext = (nativeScoreFile.name.split(".").pop() || "TAB").toUpperCase();
+          setValRow("source", "ok", nativeScoreFile.name + " · " + ext + " 原谱无损直读");
+          setValRow("audio", "ok", "alphaSynth 实时吉他音源（内置 SoundFont）");
+          setValRow("pages", "ok", "alphaTab 原生矢量 SVG 谱面（无限清晰）");
+          setValRow("manifest", "ok", "自动提取逐音数据 · 同步指板与下落轨道");
+          setValRow("pdf", "muted", "支持直接打印 / 另存为矢量 PDF");
+          stagedReady = {
+            mode: "alphatab",
+            nativeScoreFile,
+            title: nativeScoreFile.name.replace(/\.[^.]+$/, "")
+          };
+          importStartBtn.disabled = false;
+          return;
+        }
 
         // PDF (optional)
         if (pdfFile) {
@@ -11119,8 +11373,558 @@
         }
       }
 
+      // =========================================================================
+      // Native Lossless AlphaTab Engine & 2D/3D Stage Bridge
+      // =========================================================================
+      function ensureAlphaTabLoaded() {
+        if (window.alphaTab && window.alphaTab.AlphaTabApi) {
+          return Promise.resolve(window.alphaTab);
+        }
+        if (alphaLoadPromise) return alphaLoadPromise;
+
+        alphaLoadPromise = new Promise((resolve, reject) => {
+          let idx = 0;
+          const tryNext = () => {
+            if (idx >= ALPHATAB_CDN_BASES.length) {
+              alphaLoadPromise = null;
+              reject(new Error("无法从 CDN 加载 alphaTab 渲染引擎，请检查网络连接"));
+              return;
+            }
+            const base = ALPHATAB_CDN_BASES[idx++];
+            const script = document.createElement("script");
+            script.src = base + "alphaTab.min.js";
+            script.async = true;
+            script.onload = () => {
+              if (window.alphaTab && window.alphaTab.AlphaTabApi) {
+                alphaCdnBase = base;
+                resolve(window.alphaTab);
+              } else {
+                tryNext();
+              }
+            };
+            script.onerror = () => {
+              script.remove();
+              tryNext();
+            };
+            document.head.appendChild(script);
+          };
+          tryNext();
+        });
+        return alphaLoadPromise;
+      }
+
+      function teardownAlphaTabMode() {
+        if (alphaApi) {
+          try {
+            alphaApi.pause();
+            alphaApi.destroy();
+          } catch (_err) {}
+          alphaApi = null;
+        }
+        isAlphaTabMode = false;
+        alphaScore = null;
+        alphaTrackIdx = 0;
+        alphaPlaying = false;
+        alphaReady = false;
+        alphaDurationSec = 0;
+        alphaCurrentSec = 0;
+        alphaAnchorSec = 0;
+        alphaAnchorWallMs = 0;
+        alphaSourceFile = null;
+        if (alphaTabViewport) alphaTabViewport.innerHTML = "";
+        if (alphaTabShell) alphaTabShell.classList.add("hidden");
+        if (systemsFlowEl) systemsFlowEl.classList.remove("hidden");
+        if (atTrackWrap) atTrackWrap.classList.add("hidden");
+      }
+
+      function pickDefaultGuitarTrackIndex(score) {
+        if (!score || !Array.isArray(score.tracks) || !score.tracks.length) return 0;
+        for (let i = 0; i < score.tracks.length; i++) {
+          const tr = score.tracks[i];
+          const prog = tr.playbackInfo ? tr.playbackInfo.program : -1;
+          const isPerc = Boolean(tr.playbackInfo && tr.playbackInfo.isPercussion) || (tr.staves && tr.staves[0] && tr.staves[0].isPercussion);
+          if (!isPerc && prog >= 24 && prog <= 31) return i;
+        }
+        for (let i = 0; i < score.tracks.length; i++) {
+          const tr = score.tracks[i];
+          const isPerc = Boolean(tr.playbackInfo && tr.playbackInfo.isPercussion) || (tr.staves && tr.staves[0] && tr.staves[0].isPercussion);
+          if (!isPerc && tr.staves && tr.staves[0] && tr.staves[0].showTablature) return i;
+        }
+        return 0;
+      }
+
+      function extractStageFromAlphaScore(score, trackIdx, fallbackTitle) {
+        const TICKS_PER_QUARTER = 960;
+        const tracks = Array.isArray(score.tracks) ? score.tracks : [];
+        const tr = tracks[trackIdx] || tracks[0];
+        const staff = (tr && tr.staves && tr.staves[0]) ? tr.staves[0] : null;
+        const masterBars = Array.isArray(score.masterBars) ? score.masterBars : [];
+        const baseBpm = Number(score.tempo) > 0 ? Number(score.tempo) : 120;
+
+        // Build piecewise TempoMap from score.tempo + masterBar tempoAutomations
+        const tempoEvents = [{ tick: 0, bpm: baseBpm }];
+        for (let i = 0; i < masterBars.length; i++) {
+          const mb = masterBars[i];
+          const mbStart = Number(mb.start) || 0;
+          const mbDur = typeof mb.calculateDuration === "function" ? mb.calculateDuration() : (TICKS_PER_QUARTER * 4);
+          const autos = Array.isArray(mb.tempoAutomations) ? mb.tempoAutomations : [];
+          for (let j = 0; j < autos.length; j++) {
+            const a = autos[j];
+            if (a && Number(a.value) > 0) {
+              const tck = mbStart + Math.round((Number(a.ratioPosition) || 0) * mbDur);
+              tempoEvents.push({ tick: tck, bpm: Number(a.value) });
+            }
+          }
+        }
+        tempoEvents.sort((a, b) => a.tick - b.tick);
+        const tempoMap = [];
+        let accSec = 0;
+        let prevTick = 0;
+        let prevBpm = baseBpm;
+        for (let i = 0; i < tempoEvents.length; i++) {
+          const ev = tempoEvents[i];
+          if (ev.tick > prevTick) {
+            accSec += ((ev.tick - prevTick) / TICKS_PER_QUARTER) * (60 / prevBpm);
+            prevTick = ev.tick;
+          }
+          prevBpm = ev.bpm;
+          if (tempoMap.length && tempoMap[tempoMap.length - 1].tick === ev.tick) {
+            tempoMap[tempoMap.length - 1].bpm = prevBpm;
+          } else {
+            tempoMap.push({ tick: ev.tick, sec: accSec, bpm: prevBpm });
+          }
+        }
+        if (!tempoMap.length) tempoMap.push({ tick: 0, sec: 0, bpm: baseBpm });
+
+        function tickToSec(tick) {
+          let seg = tempoMap[0];
+          for (let i = 1; i < tempoMap.length; i++) {
+            if (tempoMap[i].tick <= tick) seg = tempoMap[i];
+            else break;
+          }
+          return seg.sec + ((Math.max(0, tick - seg.tick)) / TICKS_PER_QUARTER) * (60 / seg.bpm);
+        }
+
+        const nStrings = (staff && staff.stringTuning && Array.isArray(staff.stringTuning.tunings) && staff.stringTuning.tunings.length)
+          ? staff.stringTuning.tunings.length
+          : 6;
+        const capo = staff ? (Number(staff.capo) || 0) : 0;
+
+        const bars = [];
+        const sections = [];
+        const notes = [];
+        let curSecName = "";
+
+        for (let bi = 0; bi < masterBars.length; bi++) {
+          const mb = masterBars[bi];
+          const mbStart = Number(mb.start) || 0;
+          const mbDur = typeof mb.calculateDuration === "function" ? mb.calculateDuration() : (TICKS_PER_QUARTER * 4);
+          const barStartSec = tickToSec(mbStart);
+          const barEndSec = tickToSec(mbStart + mbDur);
+          const barNum = bi + 1;
+
+          const secTxt = mb.section ? (mb.section.text || mb.section.marker || "") : "";
+          if (secTxt) {
+            curSecName = secTxt;
+            sections.push({ name: secTxt, bar: barNum, start: Number(barStartSec.toFixed(3)) });
+          }
+
+          const chordNames = [];
+          const barObj = (staff && Array.isArray(staff.bars)) ? staff.bars[bi] : null;
+          if (barObj && Array.isArray(barObj.voices)) {
+            for (let vi = 0; vi < barObj.voices.length; vi++) {
+              const voice = barObj.voices[vi];
+              if (!voice || !Array.isArray(voice.beats)) continue;
+              const vBeats = voice.beats;
+              const pendingGraceByStr = new Map();
+
+              for (let bti = 0; bti < vBeats.length; bti++) {
+                const beat = vBeats[bti];
+                if (!beat) continue;
+                const chName = (beat.chord && beat.chord.name) ? String(beat.chord.name).trim() : "";
+                if (chName && chordNames[chordNames.length - 1] !== chName) {
+                  chordNames.push(chName);
+                }
+                if (beat.isEmpty || beat.isRest || !Array.isArray(beat.notes) || !beat.notes.length) continue;
+
+                // Capture grace beat to attach gf onto the following main beat's matching string
+                if (beat.graceType && beat.graceType !== 0) {
+                  for (let ni = 0; ni < beat.notes.length; ni++) {
+                    const gn = beat.notes[ni];
+                    if (gn && gn.fret >= 0) {
+                      pendingGraceByStr.set(gn.string, gn.fret);
+                    }
+                  }
+                  continue;
+                }
+
+                const absStart = Number(beat.absolutePlaybackStart);
+                const pbDur = Number(beat.playbackDuration) || 240;
+                const t0 = tickToSec(Number.isFinite(absStart) ? absStart : (mbStart + (Number(beat.playbackStart) || 0)));
+
+                // Collect active non-tie-destination notes for role assignment
+                const playable = [];
+                for (let ni = 0; ni < beat.notes.length; ni++) {
+                  const nt = beat.notes[ni];
+                  if (!nt || nt.isTieDestination) continue;
+                  playable.push(nt);
+                }
+                if (!playable.length) {
+                  pendingGraceByStr.clear();
+                  continue;
+                }
+
+                let hiPitch = -1;
+                let loPitch = 999;
+                for (let pi = 0; pi < playable.length; pi++) {
+                  const p = Number.isFinite(playable[pi].realValue) ? playable[pi].realValue : (playable[pi].string * 5 + playable[pi].fret);
+                  if (!playable[pi].isDead) {
+                    if (p > hiPitch) hiPitch = p;
+                    if (p < loPitch) loPitch = p;
+                  }
+                }
+
+                const hasBrush = Boolean(beat.brushType && beat.brushType !== 0);
+                for (let pi = 0; pi < playable.length; pi++) {
+                  const nt = playable[pi];
+                  const rawStr = Number(nt.string) || 1;
+                  const s = Math.max(1, Math.min(6, nStrings + 1 - rawStr));
+                  const f = Math.max(0, Math.min(24, Number(nt.fret) || 0));
+
+                  // Extend duration across tie chains cleanly
+                  let endTick = (Number.isFinite(absStart) ? absStart : mbStart) + pbDur;
+                  let curTie = nt;
+                  let guard = 0;
+                  while (curTie && curTie.isTieOrigin && curTie.tieDestination && guard < 8) {
+                    curTie = curTie.tieDestination;
+                    if (curTie.beat) {
+                      const tEnd = (Number(curTie.beat.absolutePlaybackStart) || endTick) + (Number(curTie.beat.playbackDuration) || 0);
+                      if (tEnd > endTick) endTick = tEnd;
+                    }
+                    guard++;
+                  }
+                  const dSec = Math.max(0.08, tickToSec(endTick) - t0);
+
+                  let role = "i";
+                  if (nt.isDead) {
+                    role = "x";
+                  } else {
+                    const p = Number.isFinite(nt.realValue) ? nt.realValue : (rawStr * 5 + f);
+                    if (playable.length >= 2) {
+                      if (p === hiPitch) role = "m";
+                      else if (p === loPitch && s >= 4) role = "b";
+                      else role = "i";
+                    } else {
+                      if (s >= 5) role = "b";
+                      else if (s <= 2) role = "m";
+                      else role = vi === 0 ? "m" : "i";
+                    }
+                  }
+
+                  const obj = {
+                    t: Number(t0.toFixed(4)),
+                    d: Number(dSec.toFixed(4)),
+                    s,
+                    f,
+                    r: role,
+                    b: barNum
+                  };
+                  if (nt.harmonicType && nt.harmonicType !== 0) obj.h = 1;
+                  if (nt.isPalmMute || beat.isPalmMute) obj.pm = 1;
+                  if (hasBrush) obj.arp = 1;
+                  if (nt.isHammerPullOrigin && nt.hammerPullDestination) {
+                    obj.lt = nt.hammerPullDestination.fret >= f ? "H" : "P";
+                    obj.to = nt.hammerPullDestination.fret;
+                  } else if (nt.slideOutType && nt.slideOutType !== 0 && nt.slideTarget) {
+                    obj.lt = "S";
+                    obj.to = nt.slideTarget.fret;
+                  }
+                  if (pendingGraceByStr.has(rawStr)) {
+                    obj.gf = pendingGraceByStr.get(rawStr);
+                    pendingGraceByStr.delete(rawStr);
+                  }
+                  notes.push(obj);
+                }
+                pendingGraceByStr.clear();
+              }
+            }
+          }
+
+          bars.push({
+            bar: barNum,
+            sysIdx: 0,
+            x0: 0,
+            x1: 1000,
+            start: Number(barStartSec.toFixed(4)),
+            end: Number(barEndSec.toFixed(4)),
+            sec: curSecName,
+            chords: chordNames.join(" · ")
+          });
+        }
+
+        notes.sort((a, b) => a.t - b.t || a.s - b.s);
+        const totalDur = bars.length ? bars[bars.length - 1].end : 0;
+        const title = (score.title && String(score.title).trim()) || fallbackTitle || "未命名作品";
+
+        return {
+          title,
+          capo,
+          bpm: baseBpm,
+          duration: Number(totalDur.toFixed(4)),
+          systems: [{ sysIdx: 0, page: 1, width: 1000, x0: 0, x1: 1000, bars }],
+          bars,
+          sections,
+          notes
+        };
+      }
+
+      function applyAlphaStageManifest(manifest) {
+        activeManifest = manifest;
+        activeTitle = manifest.title || "未命名作品";
+        barTitle.textContent = activeTitle;
+        document.title = activeTitle + " · 指弹六线谱";
+        barLocalChip.classList.toggle("hidden", !isImported);
+        menuResetBuiltin.classList.remove("hidden");
+        menuCalibrate.classList.add("hidden");
+        openPdfBtn.classList.add("hidden");
+        menuDlPdf.classList.add("hidden");
+        menuDlMp3.classList.add("hidden");
+
+        stageNotes = Array.isArray(manifest.notes) ? manifest.notes : [];
+        let maxF = 12;
+        for (let i = 0; i < stageNotes.length; i++) {
+          const f = stageNotes[i].f || 0;
+          const to = stageNotes[i].to || 0;
+          const gf = stageNotes[i].gf || 0;
+          if (f > maxF) maxF = f;
+          if (to > maxF) maxF = to;
+          if (gf > maxF) maxF = gf;
+        }
+        stageMaxFret = Math.min(20, Math.max(12, maxF));
+        stageMaxDur = stageNotes.reduce((acc, n) => Math.max(acc, n.d || 0), 0.5);
+        const capoNum = Number(manifest.capo) || 0;
+        stageCapoEl.textContent = capoNum > 0 ? ("Capo " + capoNum) : "标准调弦";
+        stageEmptyEl.classList.toggle("hidden", stageNotes.length > 0);
+        updateScrubberMarkers(manifest);
+        syncStageCanvasSize();
+        renderSync(getCurrentTimeSec());
+      }
+
+      if (atTrackSelect) {
+        atTrackSelect.addEventListener("change", () => {
+          if (!isAlphaTabMode || !alphaApi || !alphaScore) return;
+          const nextIdx = Number(atTrackSelect.value) || 0;
+          if (nextIdx < 0 || nextIdx >= alphaScore.tracks.length) return;
+          alphaTrackIdx = nextIdx;
+          alphaApi.renderTracks([alphaScore.tracks[nextIdx]]);
+          const fallbackTitle = alphaSourceFile ? alphaSourceFile.name.replace(/\.[^.]+$/, "") : activeTitle;
+          applyAlphaStageManifest(extractStageFromAlphaScore(alphaScore, nextIdx, fallbackTitle));
+        });
+      }
+
+      if (atPrintBtn) {
+        atPrintBtn.addEventListener("click", () => {
+          if (isAlphaTabMode && alphaApi) {
+            alphaApi.print();
+          }
+        });
+      }
+
+      async function enterAlphaTabMode(file) {
+        player.pause();
+        stopRaf();
+        revokeImportedUrls();
+        teardownAlphaTabMode();
+
+        activeDetection = null;
+        activeCloudSlug = "";
+        updateUrlSongSlug("");
+        isImported = true;
+        hasStarted = false;
+        followPaused = false;
+        sheetPaper.classList.remove("started");
+
+        isAlphaTabMode = true;
+        alphaSourceFile = file;
+        const fallbackTitle = file.name.replace(/\.[^.]+$/, "");
+        const ext = (file.name.split(".").pop() || "TAB").toUpperCase();
+
+        systemsFlowEl.classList.add("hidden");
+        alphaTabShell.classList.remove("hidden");
+        atFmtChip.textContent = ext;
+        atSynthStatus.className = "at-synth-status";
+        atSynthStatus.textContent = "加载 alphaTab 引擎…";
+        barTitle.textContent = fallbackTitle;
+        updatePlayIcon();
+
+        let alphaTabLib;
+        try {
+          alphaTabLib = await ensureAlphaTabLoaded();
+        } catch (err) {
+          atSynthStatus.className = "at-synth-status err";
+          atSynthStatus.textContent = "引擎加载失败";
+          showToast(err && err.message ? err.message : "alphaTab 加载失败", { type: "error", duration: 5000 });
+          return;
+        }
+
+        if (!isAlphaTabMode || alphaSourceFile !== file) return;
+        atSynthStatus.textContent = "渲染谱面与加载音源…";
+        alphaTabViewport.innerHTML = "";
+
+        const settings = {
+          core: {
+            engine: "svg",
+            scriptFile: alphaCdnBase + "alphaTab.min.js",
+            fontDirectory: alphaCdnBase + "font/",
+            logLevel: 3
+          },
+          display: {
+            scale: 1.0,
+            stretchForce: 0.85
+          },
+          player: {
+            enablePlayer: true,
+            enableCursor: true,
+            enableUserInteraction: true,
+            soundFont: alphaCdnBase + "soundfont/sonivox.sf2",
+            scrollElement: stageVisible && sheetPane ? sheetPane : document.documentElement,
+            scrollOffsetY: -24
+          }
+        };
+
+        const api = new alphaTabLib.AlphaTabApi(alphaTabViewport, settings);
+        alphaApi = api;
+
+        api.scoreLoaded.on((score) => {
+          if (alphaApi !== api) return;
+          alphaScore = score;
+          alphaTrackIdx = pickDefaultGuitarTrackIndex(score);
+
+          if (atTrackSelect && atTrackWrap) {
+            atTrackSelect.innerHTML = "";
+            if (score.tracks && score.tracks.length > 1) {
+              score.tracks.forEach((tr, i) => {
+                const opt = document.createElement("option");
+                opt.value = String(i);
+                opt.textContent = (i + 1) + ". " + (tr.name || ("Track " + (i + 1)));
+                if (i === alphaTrackIdx) opt.selected = true;
+                atTrackSelect.appendChild(opt);
+              });
+              atTrackWrap.classList.remove("hidden");
+              if (alphaTrackIdx !== 0) {
+                api.renderTracks([score.tracks[alphaTrackIdx]]);
+              }
+            } else {
+              atTrackWrap.classList.add("hidden");
+            }
+          }
+
+          const manifest = extractStageFromAlphaScore(score, alphaTrackIdx, fallbackTitle);
+          alphaDurationSec = manifest.duration || 0;
+          alphaCurrentSec = 0;
+          alphaAnchorSec = 0;
+          alphaAnchorWallMs = performance.now();
+          applyAlphaStageManifest(manifest);
+          showToast("已无损载入「" + manifest.title + "」（" + manifest.bars.length + " 小节 · " + manifest.notes.length + " 音符）", { duration: 3500 });
+        });
+
+        api.soundFontLoad.on((e) => {
+          if (alphaApi !== api || alphaReady) return;
+          if (e && e.total > 0) {
+            const pct = Math.min(100, Math.round((e.loaded / e.total) * 100));
+            atSynthStatus.textContent = "加载吉他音源 " + pct + "%…";
+          }
+        });
+
+        api.playerReady.on(() => {
+          if (alphaApi !== api) return;
+          alphaReady = true;
+          try {
+            api.playbackSpeed = playbackRate;
+          } catch (_err) {}
+          atSynthStatus.className = "at-synth-status ready";
+          atSynthStatus.textContent = "吉他音源就绪 · 点击谱面任意拍可跳转";
+        });
+
+        api.playerStateChanged.on((e) => {
+          if (alphaApi !== api) return;
+          const isNowPlaying = Boolean(e && e.state === 1);
+          alphaPlaying = isNowPlaying;
+          if (isNowPlaying) {
+            markStarted();
+            alphaAnchorSec = alphaCurrentSec;
+            alphaAnchorWallMs = performance.now();
+            startRaf();
+          } else {
+            alphaCurrentSec = getCurrentTimeSec();
+            alphaAnchorSec = alphaCurrentSec;
+            alphaAnchorWallMs = 0;
+            stopRaf();
+            renderSync(alphaCurrentSec);
+          }
+          updatePlayIcon();
+        });
+
+        api.playerPositionChanged.on((e) => {
+          if (alphaApi !== api || !e) return;
+          if (e.endTime > 0) {
+            const realEndSec = e.endTime / 1000;
+            if (Math.abs(realEndSec - alphaDurationSec) > 0.2) {
+              alphaDurationSec = realEndSec;
+              if (activeManifest) updateScrubberMarkers(activeManifest);
+            }
+          }
+          const curSec = Math.max(0, (e.currentTime || 0) / 1000);
+          alphaCurrentSec = curSec;
+          alphaAnchorSec = curSec;
+          alphaAnchorWallMs = performance.now();
+          if (rafId === null) renderSync(curSec);
+        });
+
+        api.playerFinished.on(() => {
+          if (alphaApi !== api) return;
+          alphaPlaying = false;
+          alphaAnchorWallMs = 0;
+          stopRaf();
+          updatePlayIcon();
+          renderSync(alphaCurrentSec);
+        });
+
+        api.error.on((e) => {
+          if (alphaApi !== api) return;
+          const msg = (e && (e.message || (e.inner && e.inner.message))) || "曲谱解析失败";
+          atSynthStatus.className = "at-synth-status err";
+          atSynthStatus.textContent = "解析失败";
+          showToast("原谱解析失败：" + msg, { type: "error", duration: 5000 });
+        });
+
+        try {
+          if (/\.(atex|alphatex)$/i.test(file.name)) {
+            const tex = await file.text();
+            api.tex(tex);
+          } else {
+            const buf = await file.arrayBuffer();
+            api.load(new Uint8Array(buf));
+          }
+        } catch (err) {
+          atSynthStatus.className = "at-synth-status err";
+          atSynthStatus.textContent = "读取失败";
+          showToast("文件读取失败：" + (err && err.message ? err.message : "未知错误"), { type: "error", duration: 4500 });
+        }
+
+        if (sheetPane) sheetPane.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
       importStartBtn.addEventListener("click", () => {
         if (!stagedReady) return;
+        if (stagedReady.mode === "alphatab") {
+          const targetFile = stagedReady.nativeScoreFile;
+          closeImportModal();
+          enterAlphaTabMode(targetFile);
+          return;
+        }
+        teardownAlphaTabMode();
         const { mode, manifest, detection, audioFile, pngFiles, pdfFile, scoreDataText, title } = stagedReady;
 
         const ownedUrls = [];
@@ -11868,6 +12672,7 @@
           const pdfUrl = pdfFile ? (baseSongUrl + encodePathSegments(pdfFile)) : "";
 
           revokeImportedUrls();
+          teardownAlphaTabMode();
           activeDetection = null;
           isImported = false;
           activeCloudSlug = item.slug || "";
@@ -12497,6 +13302,7 @@
 
       function loadBuiltinProject({ clearQuery = false } = {}) {
         revokeImportedUrls();
+        teardownAlphaTabMode();
         activeDetection = null;
         activeCloudSlug = "";
         if (clearQuery) updateUrlSongSlug("");
