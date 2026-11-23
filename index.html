@@ -1338,6 +1338,18 @@
       flex: none;
     }
 
+    .lib-play-btn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .lib-play-btn:hover {
+      background: var(--accent);
+      color: #ffffff;
+      filter: brightness(0.94);
+    }
+
     .lib-empty {
       padding: 24px 12px;
       text-align: center;
@@ -11933,9 +11945,10 @@
         main.append(top, sub);
         row.appendChild(main);
 
+        const acts = document.createElement("div");
+        acts.className = "lib-song-actions";
+
         if (it.bundleFile && it.songBase) {
-          const acts = document.createElement("div");
-          acts.className = "lib-song-actions";
           const zipLink = document.createElement("a");
           zipLink.className = "icon-btn";
           zipLink.href = LIBRARY_SITE_BASE + encodePathSegments(it.songBase + "/" + it.bundleFile);
@@ -11947,8 +11960,20 @@
           zipLink.addEventListener("click", (e) => e.stopPropagation());
           zipLink.addEventListener("keydown", (e) => e.stopPropagation());
           acts.appendChild(zipLink);
-          row.appendChild(acts);
         }
+
+        const playBtn = document.createElement("button");
+        playBtn.type = "button";
+        playBtn.className = "icon-btn lib-play-btn";
+        playBtn.title = "直接练习";
+        playBtn.setAttribute("aria-label", "直接练习");
+        playBtn.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/></svg>';
+        playBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          loadCloudSong(it);
+        });
+        acts.appendChild(playBtn);
+        row.appendChild(acts);
 
         return row;
       }
@@ -12055,6 +12080,14 @@
         libraryModal.classList.add("open");
         if (cloudCatalogCache && !force) {
           renderCloudCatalog(cloudCatalogCache, libSearchInput.value);
+          // Stale-while-revalidate quietly if cache is > 30s old
+          if (Date.now() - cloudCatalogFetchedAt > 30_000) {
+            fetchCloudCatalog({ force: true }).then((fresh) => {
+              if (fresh && libraryModal.classList.contains("open")) {
+                renderCloudCatalog(fresh, libSearchInput.value);
+              }
+            });
+          }
           return;
         }
         libModalMeta.textContent = "加载中…";
